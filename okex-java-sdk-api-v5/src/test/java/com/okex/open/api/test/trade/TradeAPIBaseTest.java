@@ -13,17 +13,17 @@ public class TradeAPIBaseTest extends BaseTests {
         config.setDomain("https://www.okx.com");
 
 
-        config.setApiKey("");
-        config.setSecretKey("");
-        config.setPassphrase("");
+        config.setApiKey("b7959169-9e2a-44c7-bcee-84944cb8b850");
+        config.setSecretKey("779E65D4653FAE85E620AE1E7CA2F8B4");
+        config.setPassphrase("Ropeok@123");
 
         //请求模拟盘的接口需要传入1，否则传入0
         //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
-        config.setxSimulatedTrading("0");
+//        config.setxSimulatedTrading("0");
 
         //请求模拟盘的接口需要传入1，否则传入0
         //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
-        config.setxSimulatedTrading("0");
+        config.setxSimulatedTrading("1");
 
 
         config.setPrint(true);
