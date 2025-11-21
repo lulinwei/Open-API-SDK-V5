@@ -3,6 +3,7 @@ package com.okex.open.api.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.okex.open.api.bean.copytrading.param.CloseSubposition;
+import com.okex.open.api.bean.trade.param.ClosePositions;
 import com.okex.open.api.bean.trade.param.PlaceOrder;
 import com.okex.open.api.config.APIConfiguration;
 import com.okex.open.api.controller.response.*;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
+//http://localhost:8080/api/test/hello
 @Service
 public class GridService {
 
@@ -40,8 +41,8 @@ public class GridService {
 
     public String instId = "ETH-USDT-SWAP";
     private AccountAPIService accountAPIService;
-    public String getGrid() {
 
+    public String getGrid() {
 
 
         JSONObject ticker = this.marketDataAPIService.getTicker(instId);
@@ -49,65 +50,56 @@ public class GridService {
         String last = tickerResponse.getData().get(0).getLast();
         double currentPrice = Double.parseDouble(last);
 
-        JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId,null,null,"1m","100");
+        JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "1m", "100");
         CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
 
-        JSONObject positions = this.accountAPIService.getPositions("SWAP",instId,null);
+        JSONObject positions = this.accountAPIService.getPositions("SWAP", instId, null);
         PositionsResponse positionsResponse = JSON.toJavaObject(positions, PositionsResponse.class);
         List<PositionsResponse.DataDTO> data = positionsResponse.getData();
-        if(data.size()>0){
+        if (data.size() > 0) {
             //整体盈利 一键平仓
+            PositionsResponse.DataDTO position = data.get(0);
+            if (Double.valueOf(position.getPnl()) > 0) {
+                ClosePositions closePositions = new ClosePositions();
+                closePositions.setInstId(instId);
+                closePositions.setPosSide("long");
+                closePositions.setMgnMode("cross");
+                closePositions.setCcy("");
+                closePositions.setClOrdId("");
+                closePositions.setTag("");
+                closePositions.setAutoCxl("false");
+                JSONObject result = tradeAPIService.closePositions(closePositions);
+            } else {
+                JSONObject currentSubpositions = copytradingAPIService.currentSubpositions(instId, null, null, null, null, null, null);
 
-        }else if(data.size()==0){
-        }
+                CurrentSubpositionsResponse currentSubpositionsResponse = JSON.toJavaObject(currentSubpositions, CurrentSubpositionsResponse.class);
 
-        JSONObject currentSubpositions = copytradingAPIService.currentSubpositions(instId, null, null, null, null, null, null);
+                List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
 
-        CurrentSubpositionsResponse currentSubpositionsResponse = JSON.toJavaObject(currentSubpositions, CurrentSubpositionsResponse.class);
+                // Using Java 8 streams
+                Optional<Double> minPriceOptional = currentSubpositionsResponseData.stream()
+                        .filter(dataDTO -> dataDTO.getOpenAvgPx() != null && !dataDTO.getOpenAvgPx().isEmpty())
+                        .map(dataDTO -> Double.parseDouble(dataDTO.getOpenAvgPx()))
+                        .min(Double::compare);
 
-        List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
-        for (int i = 0; i < currentSubpositionsResponseData.size(); i++) {
-            CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData.get(i);
-            String subPosId = dataDTO.getSubPosId();
-            String openAvgPx = dataDTO.getOpenAvgPx();
-
-            //获取当前价格高于订单价格 50平仓
-            if(currentPrice -Double.parseDouble(openAvgPx)>50){
-                CloseSubposition closeSubposition = new CloseSubposition();
-                closeSubposition.setSubPosId(subPosId);
-                closeSubposition.setTag("");
-                closeSubposition.setInstType("");
-                closeSubposition.setSubPosType("");
-                closeSubposition.setOrdType("");
-                closeSubposition.setPx("");
-                copytradingAPIService.closeSubposition(closeSubposition);
-            }
-        }
-        // Using Java 8 streams
-        Optional<Double> minPriceOptional = currentSubpositionsResponseData.stream()
-                .filter(dataDTO -> dataDTO.getOpenAvgPx() != null && !dataDTO.getOpenAvgPx().isEmpty())
-                .map(dataDTO -> Double.parseDouble(dataDTO.getOpenAvgPx()))
-                .min(Double::compare);
-
-        double minPrice = minPriceOptional.orElse(0.0);
+                double minPrice = minPriceOptional.orElse(0.0);
 
 
-        if(minPrice>0){
-            //获取当前价格低于订单价格 50开仓
-            if(minPrice-currentPrice >50){
-                //求 currentSubpositionsResponseData的最低价格
-                PlaceOrder placeOrder = new PlaceOrder();
-                placeOrder.setInstId("ETH-USDT-SWAP");
-                placeOrder.setTdMode("cross");
+                //获取当前价格低于订单价格 50开仓
+                if (minPrice - currentPrice > 50) {
+                    //求 currentSubpositionsResponseData的最低价格
+                    PlaceOrder placeOrder = new PlaceOrder();
+                    placeOrder.setInstId("ETH-USDT-SWAP");
+                    placeOrder.setTdMode("cross");
 //        placeOrder.setCcy("USDT");
-                placeOrder.setClOrdId("RK00003");
+                    placeOrder.setClOrdId("RK00003");
 //        placeOrder.setTag("");
-                placeOrder.setSide("buy");
-                placeOrder.setPosSide("long");
+                    placeOrder.setSide("buy");
+                    placeOrder.setPosSide("long");
 //        placeOrder.setOrdType("limit");
-                placeOrder.setOrdType("market");
-                placeOrder.setSz("0.01");
-                placeOrder.setQuickMgnType("");
+                    placeOrder.setOrdType("market");
+                    placeOrder.setSz("0.01");
+                    placeOrder.setQuickMgnType("");
 
 //        placeOrder.setPx("1500");
 //        placeOrder.setReduceOnly(false);
@@ -115,14 +107,50 @@ public class GridService {
 //        placeOrder.setBanAmend(false);
 
 
-                JSONObject result = tradeAPIService.placeOrder(placeOrder);
-                PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
+                    JSONObject result = tradeAPIService.placeOrder(placeOrder);
+                    PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
+                } else {
+                    for (int i = 0; i < currentSubpositionsResponseData.size(); i++) {
+                        CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData.get(i);
+                        String subPosId = dataDTO.getSubPosId();
+                        String openAvgPx = dataDTO.getOpenAvgPx();
+
+                        //获取当前价格高于订单价格 50平仓
+                        if (currentPrice - Double.parseDouble(openAvgPx) > 50) {
+                            CloseSubposition closeSubposition = new CloseSubposition();
+                            closeSubposition.setSubPosId(subPosId);
+                            closeSubposition.setTag("");
+                            closeSubposition.setInstType("");
+                            closeSubposition.setSubPosType("");
+                            closeSubposition.setOrdType("");
+                            closeSubposition.setPx("");
+                            copytradingAPIService.closeSubposition(closeSubposition);
+                        }
+                    }
+                }
+
             }
+
+        } else if (data.size() == 0) {
         }
 
 
-
         return "getGrid";
+    }
+
+    public void closePositions() {
+
+        ClosePositions closePositions = new ClosePositions();
+        closePositions.setInstId("BTC-USD-SWAP");
+        closePositions.setPosSide("long");
+        closePositions.setMgnMode("cross");
+        closePositions.setCcy("");
+        closePositions.setClOrdId("");
+        closePositions.setTag("");
+        closePositions.setAutoCxl("false");
+        JSONObject result = tradeAPIService.closePositions(closePositions);
+
+
     }
 
     public APIConfiguration config() {
