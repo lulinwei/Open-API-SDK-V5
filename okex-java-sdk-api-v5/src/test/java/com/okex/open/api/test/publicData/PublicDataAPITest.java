@@ -30,7 +30,7 @@ public class PublicDataAPITest extends PublicDataAPIBaseTest {
      */
     @Test
     public void getInstruments(){
-        JSONObject result = publicDataAPIService.getInstruments("SPOT",null,"","BTC-USDT");
+        JSONObject result = publicDataAPIService.getInstruments("SWAP",null,"","ETH-USDT-SWAP");
         toResultString(LOG, "result", result);
 
     }

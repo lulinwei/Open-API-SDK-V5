@@ -19,8 +19,7 @@ public class LlwTradeAPITest extends TradeAPIBaseTest {
     @Before
     public void before() {
 
-        System.setProperty("proxyHost", "127.0.0.1");
-        System.setProperty("proxyPort", "10809");
+
         config = config();
         tradeAPIService = new TradeAPIServiceImpl(config);
     }
@@ -39,7 +38,7 @@ public class LlwTradeAPITest extends TradeAPIBaseTest {
         placeOrder.setPosSide("long");
 //        placeOrder.setOrdType("limit");
         placeOrder.setOrdType("market");
-        placeOrder.setSz("1");
+        placeOrder.setSz("0.01");
         placeOrder.setQuickMgnType("");
 
 //        placeOrder.setPx("1500");
