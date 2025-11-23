@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 //http://localhost:8080/api/test/hello
 @Service
 public class GridService {
@@ -50,8 +52,7 @@ public class GridService {
         String last = tickerResponse.getData().get(0).getLast();
         double currentPrice = Double.parseDouble(last);
 
-        JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "1m", "100");
-        CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
+
 
         JSONObject positions = this.accountAPIService.getPositions("SWAP", instId, null);
         PositionsResponse positionsResponse = JSON.toJavaObject(positions, PositionsResponse.class);
@@ -59,7 +60,7 @@ public class GridService {
         if (data.size() > 0) {
             //整体盈利 一键平仓
             PositionsResponse.DataDTO position = data.get(0);
-            if (Double.valueOf(position.getPnl()) > 0) {
+            if (Double.valueOf(position.getPnl()) > 10) {
                 ClosePositions closePositions = new ClosePositions();
                 closePositions.setInstId(instId);
                 closePositions.setPosSide("long");
@@ -84,9 +85,19 @@ public class GridService {
 
                 double minPrice = minPriceOptional.orElse(0.0);
 
-
+                JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "1m", "100");
+                CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
+                List<List<String>> ca = candlesticksResponse.getData();
+                List<Double> prices = ca.stream()
+                        .map(candlestick -> Double.parseDouble(candlestick.get(4)))
+                        .collect(Collectors.toList());
+                IndicatorTool indicatorTool = new IndicatorTool();
+                double[] pricesArray = prices.stream()
+                        .mapToDouble(Double::doubleValue)
+                        .toArray();
+                boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
                 //获取当前价格低于订单价格 50开仓
-                if (minPrice - currentPrice > 50) {
+                if (minPrice - currentPrice > 50&&macdGoldenCross) {
                     //求 currentSubpositionsResponseData的最低价格
                     PlaceOrder placeOrder = new PlaceOrder();
                     placeOrder.setInstId("ETH-USDT-SWAP");

@@ -1,4 +1,10 @@
-//package com.okex.open.api.controller;
+package com.okex.open.api.controller;
+
+import com.tictactec.ta.lib.Core;
+import com.tictactec.ta.lib.MInteger;//package com.okex.open.api.controller;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
 //
 //import com.tictactec.ta.lib.Core;
 //import com.tictactec.ta.lib.MAType;
@@ -14,9 +20,9 @@
 //import java.util.Collections;
 //import java.util.List;
 //
-//@Slf4j
-//@Component
-//public class IndicatorTool {
+@Slf4j
+@Component
+public class IndicatorTool {
 //
 //
 //    public int closePriceIndex = 0;
@@ -132,26 +138,26 @@
 //        }
 //    }
 //
-//    public boolean isMACDGoldenCross(double[] closePrices) {
-//        Core talib = new Core();
-//        int lookback = talib.macdLookback(12, 26, 9);
-////        if (closePriceIndex < lookback) return false;
-//
-//        double[] outMACD = new double[closePrices.length-lookback];
-//        double[] outSignal = new double[closePrices.length-lookback];
-//        double[] outHist = new double[closePrices.length-lookback];
-//        MInteger begin = new MInteger();
-//        MInteger length = new MInteger();
-//
-//        talib.macd(0, closePrices.length - 1, closePrices, 12, 26, 9, begin, length, outMACD, outSignal, outHist);
-//
-////        int macdEnd = begin.value + length.value - 1;
-//        int macdEnd = outMACD.length-1;
-//
-//        if (macdEnd < 1) return false;
-////        log.info("指标信息： macd:{}  signal:{} / macd:{}  signal:{}  ",outMACD[macdEnd - 1],outSignal[macdEnd - 1],outMACD[macdEnd],outSignal[macdEnd]);
-//        return outMACD[macdEnd - 1] < outSignal[macdEnd - 1] && outMACD[macdEnd] >= outSignal[macdEnd];
-//    }
+    public boolean isMACDGoldenCross(double[] closePrices) {
+        Core talib = new Core();
+        int lookback = talib.macdLookback(12, 26, 9);
+//        if (closePriceIndex < lookback) return false;
+
+        double[] outMACD = new double[closePrices.length-lookback];
+        double[] outSignal = new double[closePrices.length-lookback];
+        double[] outHist = new double[closePrices.length-lookback];
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+
+        talib.macd(0, closePrices.length - 1, closePrices, 12, 26, 9, begin, length, outMACD, outSignal, outHist);
+
+//        int macdEnd = begin.value + length.value - 1;
+        int macdEnd = outMACD.length-1;
+
+        if (macdEnd < 1) return false;
+//        log.info("指标信息： macd:{}  signal:{} / macd:{}  signal:{}  ",outMACD[macdEnd - 1],outSignal[macdEnd - 1],outMACD[macdEnd],outSignal[macdEnd]);
+        return outMACD[macdEnd - 1] < outSignal[macdEnd - 1] && outMACD[macdEnd] >= outSignal[macdEnd];
+    }
 //
 //
 //
@@ -496,4 +502,4 @@
 //
 ////        System.out.println(taLibTool.isMACDGoldenCross(close));
 //    }
-//}
+}
