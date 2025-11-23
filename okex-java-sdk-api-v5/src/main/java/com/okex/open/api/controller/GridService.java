@@ -16,6 +16,7 @@ import com.okex.open.api.service.marketData.MarketDataAPIService;
 import com.okex.open.api.service.marketData.impl.MarketDataAPIServiceImpl;
 import com.okex.open.api.service.trade.TradeAPIService;
 import com.okex.open.api.service.trade.impl.TradeAPIServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 //http://localhost:8080/api/test/hello
 @Service
+@Slf4j
 public class GridService {
 
 
@@ -52,7 +54,7 @@ public class GridService {
         String last = tickerResponse.getData().get(0).getLast();
         double currentPrice = Double.parseDouble(last);
 
-
+        log.info("当前价格：{}", currentPrice);
 
         JSONObject positions = this.accountAPIService.getPositions("SWAP", instId, null);
         PositionsResponse positionsResponse = JSON.toJavaObject(positions, PositionsResponse.class);
@@ -70,6 +72,7 @@ public class GridService {
                 closePositions.setTag("");
                 closePositions.setAutoCxl("false");
                 JSONObject result = tradeAPIService.closePositions(closePositions);
+                log.info("整体平仓结果：{}", JSON.toJSONString(result));
             } else {
                 JSONObject currentSubpositions = copytradingAPIService.currentSubpositions(instId, null, null, null, null, null, null);
 
@@ -97,7 +100,7 @@ public class GridService {
                         .toArray();
                 boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
                 //获取当前价格低于订单价格 50开仓
-                if (minPrice - currentPrice > 50&&macdGoldenCross) {
+                if (minPrice - currentPrice > 50 && macdGoldenCross) {
                     //求 currentSubpositionsResponseData的最低价格
                     PlaceOrder placeOrder = new PlaceOrder();
                     placeOrder.setInstId("ETH-USDT-SWAP");
@@ -120,6 +123,7 @@ public class GridService {
 
                     JSONObject result = tradeAPIService.placeOrder(placeOrder);
                     PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
+                    log.info("下单结果：{}", JSON.toJSONString(placeOrder2));
                 } else {
                     for (int i = 0; i < currentSubpositionsResponseData.size(); i++) {
                         CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData.get(i);
@@ -135,7 +139,8 @@ public class GridService {
                             closeSubposition.setSubPosType("");
                             closeSubposition.setOrdType("");
                             closeSubposition.setPx("");
-                            copytradingAPIService.closeSubposition(closeSubposition);
+                            JSONObject jsonObject = copytradingAPIService.closeSubposition(closeSubposition);
+                            log.info("平仓结果：{}", JSON.toJSONString(jsonObject));
                         }
                     }
                 }
