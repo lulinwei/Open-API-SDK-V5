@@ -63,9 +63,9 @@ public class GridService {
             //整体盈利 一键平仓
             PositionsResponse.DataDTO position = data.get(0);
             log.info("仓位信息：{}", JSON.toJSONString(position));
-            Double liqPx = Double.valueOf(position.getLiqPx());
+            Double liqPx = Double.valueOf(("").equals(position.getLiqPx())?"10000":position.getLiqPx());
             Double bePx = Double.valueOf(position.getBePx());
-            if (Double.valueOf(position.getUpl())+Double.valueOf(position.getRealizedPnl()) > 10) {
+            if (bePx - currentPrice > 50 && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
                 ClosePositions closePositions = new ClosePositions();
                 closePositions.setInstId(instId);
                 closePositions.setPosSide("long");
@@ -193,7 +193,7 @@ public class GridService {
         config.setxSimulatedTrading("1");
 
 
-        config.setPrint(true);
+        config.setPrint(false);
         /* config.setI18n(I18nEnum.SIMPLIFIED_CHINESE);*/
         config.setI18n(I18nEnum.ENGLISH);
         return config;
