@@ -82,6 +82,7 @@ public class GridService {
                 CurrentSubpositionsResponse currentSubpositionsResponse = JSON.toJavaObject(currentSubpositions, CurrentSubpositionsResponse.class);
 
                 List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
+                log.info("当前仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
 
                 // Using Java 8 streams
                 Optional<Double> minPriceOptional = currentSubpositionsResponseData.stream()
@@ -109,7 +110,10 @@ public class GridService {
                     placeOrder.setInstId("ETH-USDT-SWAP");
                     placeOrder.setTdMode("cross");
 //        placeOrder.setCcy("USDT");
-                    placeOrder.setClOrdId("RK00003");
+//                    placeOrder.setClOrdId("RK00003");
+                    // Replace the fixed ClOrdId with current timestamp
+            placeOrder.setClOrdId("RK" + System.currentTimeMillis());
+
 //        placeOrder.setTag("");
                     placeOrder.setSide("buy");
                     placeOrder.setPosSide("long");
