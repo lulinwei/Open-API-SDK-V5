@@ -42,9 +42,9 @@ public class GridService {
             "0.15", "0.15", "0.15",
             "0.18", "0.18", "0.18",
             "0.2", "0.2", "0.2",
+            "0.2", "0.2", "0.2",
             "0.25", "0.25", "0.25",
-            "0.3", "0.3", "0.3",
-            "0.3", "0.3", "0.3"
+            "0.25", "0.25", "0.25"
     };
 
     double[] profits = {
@@ -94,7 +94,8 @@ public class GridService {
             //整体盈利 一键平仓
             PositionsResponse.DataDTO position = postions.get(0);
             log.info("汇总仓位信息：{}", JSON.toJSONString(position));
-            Double liqPx = Double.valueOf(("").equals(position.getLiqPx()) ? "10000" : position.getLiqPx());
+            String liqPxStr = position.getLiqPx();
+            Double liqPx = Double.valueOf(("").equals(liqPxStr) ? "10000" : liqPxStr);
             Double bePx = Double.valueOf(position.getBePx());
 
 
@@ -104,7 +105,7 @@ public class GridService {
 
             List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
             log.info("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
-
+           log.info("盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
             if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
                 ClosePositions closePositions = new ClosePositions();
                 closePositions.setInstId(instId);
@@ -134,8 +135,8 @@ public class GridService {
                 IndicatorTool indicatorTool = new IndicatorTool();
                 double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                 boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
-                //获取当前价格低于订单价格 50开仓
-                if (minPrice - currentPrice > 50 && macdGoldenCross && liqPx < 500) {
+                //获取当前价格低于订单价格 50补仓
+                if (minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)) {
                     //求 currentSubpositionsResponseData的最低价格
                     PlaceOrder placeOrder = new PlaceOrder();
                     placeOrder.setInstId("ETH-USDT-SWAP");
