@@ -269,6 +269,18 @@ public class IndicatorTool {
 //        talib.rsi(0, closePrices.length - 1, closePrices, 14, begin, length, outRSI);
 //        return outRSI[length.value - 1];
 //    }
+
+
+        public double rsi(double[] closePrices) {
+//        double[] closePrices=futuresCandlesticks.stream().mapToDouble(bar -> Double.valueOf(bar.getC())).toArray();
+        Core talib = new Core();
+        double[] outRSI = new double[closePrices.length];
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+        talib.rsi(0, closePrices.length - 1, closePrices, 14, begin, length, outRSI);
+        return outRSI[length.value - 1];
+    }
+
 //
 //    public boolean macd(double[] closePrices) {
 //        Core talib = new Core();
