@@ -1,2 +1,9 @@
 server:
     port: 8081
+
+
+logging:
+    level:
+        com.okex.open.api: INFO
+        org.springframework.web: DEBUG
+    config: classpath:logback.xml

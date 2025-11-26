@@ -104,9 +104,10 @@ public class GridService {
             CurrentSubpositionsResponse currentSubpositionsResponse = JSON.toJavaObject(currentSubpositions, CurrentSubpositionsResponse.class);
 
             List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
-            log.info("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
+//            log.info("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
            log.info("盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
-            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
+//            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
+            if (bePx - currentPrice >= profits[currentSubpositionsResponseData.size()]) {
                 ClosePositions closePositions = new ClosePositions();
                 closePositions.setInstId(instId);
                 closePositions.setPosSide("long");
@@ -166,6 +167,7 @@ public class GridService {
                 } else {
                     for (int i = 0; i < currentSubpositionsResponseData.size(); i++) {
                         CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData.get(i);
+                        log.info("明细仓位信息：{}", JSON.toJSONString(dataDTO));
                         String subPosId = dataDTO.getSubPosId();
                         String openAvgPx = dataDTO.getOpenAvgPx();
 
@@ -253,17 +255,24 @@ public class GridService {
         config.setDomain("https://www.okx.com");
 
 
-        config.setApiKey("b7959169-9e2a-44c7-bcee-84944cb8b850");
-        config.setSecretKey("779E65D4653FAE85E620AE1E7CA2F8B4");
+//        config.setApiKey("b7959169-9e2a-44c7-bcee-84944cb8b850");
+//        config.setSecretKey("779E65D4653FAE85E620AE1E7CA2F8B4");
+//        //请求模拟盘的接口需要传入1，否则传入0
+//        //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
+//        config.setxSimulatedTrading("1");
+
+        config.setApiKey("2598faab-8351-4e0d-8fd3-d91ea92bb693");
+        config.setSecretKey("5E2CA393CF4466489F2FAFAF77FCD3F2");
+        //请求模拟盘的接口需要传入1，否则传入0
+        //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
+        config.setxSimulatedTrading("0");
+
+
         config.setPassphrase("Ropeok@123");
 
-        //请求模拟盘的接口需要传入1，否则传入0
-        //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
-//        config.setxSimulatedTrading("0");
 
-        //请求模拟盘的接口需要传入1，否则传入0
-        //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
-        config.setxSimulatedTrading("1");
+
+
 
 
         config.setPrint(false);
