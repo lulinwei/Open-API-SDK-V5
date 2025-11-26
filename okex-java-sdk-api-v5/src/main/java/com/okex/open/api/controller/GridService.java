@@ -137,23 +137,25 @@ public class GridService {
                 double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                 boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
                 //获取当前价格低于订单价格 50补仓
-                if (minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)) {
-                    //求 currentSubpositionsResponseData的最低价格
-                    PlaceOrder placeOrder = new PlaceOrder();
-                    placeOrder.setInstId("ETH-USDT-SWAP");
-                    placeOrder.setTdMode("cross");
+                if (minPrice > currentPrice) {
+                    log.info("监测是否加仓中。。。。。");
+                    if(minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)){
+                        //求 currentSubpositionsResponseData的最低价格
+                        PlaceOrder placeOrder = new PlaceOrder();
+                        placeOrder.setInstId("ETH-USDT-SWAP");
+                        placeOrder.setTdMode("cross");
 //        placeOrder.setCcy("USDT");
 //                    placeOrder.setClOrdId("RK00003");
-                    // Replace the fixed ClOrdId with current timestamp
-                    placeOrder.setClOrdId("RK" + System.currentTimeMillis());
+                        // Replace the fixed ClOrdId with current timestamp
+                        placeOrder.setClOrdId("RK" + System.currentTimeMillis());
 
 //        placeOrder.setTag("");
-                    placeOrder.setSide("buy");
-                    placeOrder.setPosSide("long");
+                        placeOrder.setSide("buy");
+                        placeOrder.setPosSide("long");
 //        placeOrder.setOrdType("limit");
-                    placeOrder.setOrdType("market");
-                    placeOrder.setSz(sizes[currentSubpositionsResponseData.size()]);
-                    placeOrder.setQuickMgnType("");
+                        placeOrder.setOrdType("market");
+                        placeOrder.setSz(sizes[currentSubpositionsResponseData.size()]);
+                        placeOrder.setQuickMgnType("");
 
 //        placeOrder.setPx("1500");
 //        placeOrder.setReduceOnly(false);
@@ -161,10 +163,13 @@ public class GridService {
 //        placeOrder.setBanAmend(false);
 
 
-                    JSONObject result = tradeAPIService.placeOrder(placeOrder);
-                    PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
-                    log.info("下单结果：{}", JSON.toJSONString(placeOrder2));
+                        JSONObject result = tradeAPIService.placeOrder(placeOrder);
+                        PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
+                        log.info("下单结果：{}", JSON.toJSONString(placeOrder2));
+                    }
+
                 } else {
+                    log.info("监测是否平仓中。。。。。");
                     for (int i = 0; i < currentSubpositionsResponseData.size(); i++) {
                         CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData.get(i);
                         log.info("明细仓位信息：{}", JSON.toJSONString(dataDTO));
