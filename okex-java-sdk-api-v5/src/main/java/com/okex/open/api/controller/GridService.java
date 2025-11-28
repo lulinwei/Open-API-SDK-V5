@@ -107,7 +107,7 @@ public class GridService {
 //            log.info("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
            log.info("盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
-            if (bePx - currentPrice >= profits[currentSubpositionsResponseData.size()]) {
+            if (currentPrice-bePx  >= profits[currentSubpositionsResponseData.size()]) {
                 ClosePositions closePositions = new ClosePositions();
                 closePositions.setInstId(instId);
                 closePositions.setPosSide("long");
@@ -138,7 +138,7 @@ public class GridService {
                 boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
                 log.info("minPrice :{}   MACD金叉：{}",minPrice, macdGoldenCross);
                 //获取当前价格低于订单价格 50补仓
-                if (minPrice > currentPrice) {
+                if (currentPrice<minPrice  ) {
                     log.info("监测是否加仓中。。。。。");
                     if(minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)){
                         //求 currentSubpositionsResponseData的最低价格
