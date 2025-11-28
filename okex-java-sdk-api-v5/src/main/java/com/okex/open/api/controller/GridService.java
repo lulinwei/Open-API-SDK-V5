@@ -136,6 +136,7 @@ public class GridService {
                 IndicatorTool indicatorTool = new IndicatorTool();
                 double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                 boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
+                log.info("minPrice :{}   MACD金叉：{}",minPrice, macdGoldenCross);
                 //获取当前价格低于订单价格 50补仓
                 if (minPrice > currentPrice) {
                     log.info("监测是否加仓中。。。。。");
