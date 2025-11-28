@@ -3,4 +3,4 @@ server:
 
 
 logging:
-    config: classpath:logback.xml
+    config: classpath:logback-prod.xml
