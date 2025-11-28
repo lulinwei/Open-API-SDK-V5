@@ -34,7 +34,7 @@ public class GridService {
     TradeAPIService tradeAPIService;
     public MarketDataAPIService marketDataAPIService;
 
-    String[] sizes = {
+    String[] positions = {
             "0.02", "0.02", "0.02",
             "0.04", "0.04", "0.04",
             "0.08", "0.08", "0.08",
@@ -105,9 +105,16 @@ public class GridService {
 
             List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
 //            log.info("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
-           log.info("盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
+            log.info("盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
+            // 添加边界检查
+// 添加边界检查
+            int size = currentSubpositionsResponseData.size();
+            if (size >= profits.length) {
+                size = profits.length - 1;
+            }
+
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
-            if (currentPrice-bePx  >= profits[currentSubpositionsResponseData.size()]) {
+            if (currentPrice - bePx >= profits[size]) {
                 ClosePositions closePositions = new ClosePositions();
                 closePositions.setInstId(instId);
                 closePositions.setPosSide("long");
@@ -136,11 +143,11 @@ public class GridService {
                 IndicatorTool indicatorTool = new IndicatorTool();
                 double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                 boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
-                log.info("minPrice :{}   MACD金叉：{}",minPrice, macdGoldenCross);
+                log.info("minPrice :{}   MACD金叉：{}", minPrice, macdGoldenCross);
                 //获取当前价格低于订单价格 50补仓
-                if (currentPrice<minPrice  ) {
+                if (currentPrice < minPrice) {
                     log.info("监测是否加仓中。。。。。");
-                    if(minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)){
+                    if (minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)) {
                         //求 currentSubpositionsResponseData的最低价格
                         PlaceOrder placeOrder = new PlaceOrder();
                         placeOrder.setInstId("ETH-USDT-SWAP");
@@ -155,7 +162,11 @@ public class GridService {
                         placeOrder.setPosSide("long");
 //        placeOrder.setOrdType("limit");
                         placeOrder.setOrdType("market");
-                        placeOrder.setSz(sizes[currentSubpositionsResponseData.size()]);
+//                        int size = currentSubpositionsResponseData.size();
+                        if (size >= this.positions.length) {
+                            size = this.positions.length - 1;
+                        }
+                        placeOrder.setSz(this.positions[size]);
                         placeOrder.setQuickMgnType("");
 
 //        placeOrder.setPx("1500");
@@ -194,8 +205,7 @@ public class GridService {
 
             }
 
-        }
-        else if (filteredPositions.size() == 0) {
+        } else if (filteredPositions.size() == 0) {
             JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "5m", "100");
             CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
             List<List<String>> ca = candlesticksResponse.getData();
@@ -275,10 +285,6 @@ public class GridService {
 
 
         config.setPassphrase("Ropeok@123");
-
-
-
-
 
 
         config.setPrint(false);
