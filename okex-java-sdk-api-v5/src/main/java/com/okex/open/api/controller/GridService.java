@@ -112,7 +112,7 @@ public class GridService {
             if (size >= profits.length) {
                 size = profits.length - 1;
             }
-
+            log.info("当前价格跟盈亏价格比较 :{}", currentPrice - bePx);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
             if (currentPrice - bePx >= profits[size]) {
                 ClosePositions closePositions = new ClosePositions();
@@ -187,7 +187,7 @@ public class GridService {
                         log.info("明细仓位信息：{}", JSON.toJSONString(dataDTO));
                         String subPosId = dataDTO.getSubPosId();
                         String openAvgPx = dataDTO.getOpenAvgPx();
-
+                      log.info("当前价格高于订单价格 :{}", currentPrice - Double.parseDouble(openAvgPx));
                         //获取当前价格高于订单价格 50平仓
                         if (currentPrice - Double.parseDouble(openAvgPx) > 50) {
                             CloseSubposition closeSubposition = new CloseSubposition();
