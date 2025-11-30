@@ -109,6 +109,7 @@ public class GridService {
             // 添加边界检查
 // 添加边界检查
             int size = currentSubpositionsResponseData.size();
+            log.info("带单数量：{}",size);
             if (size >= profits.length) {
                 size = profits.length - 1;
             }
@@ -143,7 +144,7 @@ public class GridService {
                 IndicatorTool indicatorTool = new IndicatorTool();
                 double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                 boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
-                log.info("minPrice :{}   MACD金叉：{}", minPrice, macdGoldenCross);
+                log.info("当前带单 minPrice :{}   MACD金叉：{}", minPrice, macdGoldenCross);
                 //获取当前价格低于订单价格 50补仓
                 if (currentPrice < minPrice) {
                     log.info("监测是否加仓中。。。。。");
@@ -195,12 +196,12 @@ public class GridService {
 
                     for (int i = 0; i < currentSubpositionsResponseData2.size(); i++) {
                         CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData2.get(i);
-                        log.info("明细仓位：{} 信息：{}",i+1, JSON.toJSONString(dataDTO));
+                        log.info("明细仓位：{} 信息：{}", i + 1, JSON.toJSONString(dataDTO));
                         String subPosId = dataDTO.getSubPosId();
                         String openAvgPx = dataDTO.getOpenAvgPx();
-                      log.info("当前价格高于订单价格 :{}", currentPrice - Double.parseDouble(openAvgPx));
+                        log.info("当前价格高于订单价格 :{}", currentPrice - Double.parseDouble(openAvgPx));
                         //获取当前价格高于订单价格 50平仓
-                        if (currentPrice - Double.parseDouble(openAvgPx) > 50) {
+                        if (currentPrice - Double.parseDouble(openAvgPx) >= 50) {
                             CloseSubposition closeSubposition = new CloseSubposition();
                             closeSubposition.setSubPosId(subPosId);
                             closeSubposition.setTag("");
