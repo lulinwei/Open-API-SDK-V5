@@ -93,7 +93,7 @@ public class GridService {
         if (filteredPositions.size() > 0) {
             //整体盈利 一键平仓
             PositionsResponse.DataDTO position = postions.get(0);
-            log.info("汇总仓位信息：{}", JSON.toJSONString(position));
+            log.info("整体汇总仓位信息：{}", JSON.toJSONString(position));
             String liqPxStr = position.getLiqPx();
             Double liqPx = Double.valueOf(("").equals(liqPxStr) ? "10000" : liqPxStr);
             Double bePx = Double.valueOf(position.getBePx());
@@ -105,14 +105,14 @@ public class GridService {
 
             List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
 //            log.info("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
-            log.info("盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
+            log.info("整体盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
             // 添加边界检查
 // 添加边界检查
             int size = currentSubpositionsResponseData.size();
             if (size >= profits.length) {
                 size = profits.length - 1;
             }
-            log.info("当前价格跟盈亏价格比较 :{}", currentPrice - bePx);
+            log.info("整体当前价格跟盈亏价格比较 :{}", currentPrice - bePx);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
             if (currentPrice - bePx >= profits[size]) {
                 ClosePositions closePositions = new ClosePositions();
@@ -182,9 +182,20 @@ public class GridService {
 
                 } else {
                     log.info("监测是否平仓中。。。。。");
-                    for (int i = 0; i < currentSubpositionsResponseData.size(); i++) {
-                        CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData.get(i);
-                        log.info("明细仓位信息：{}", JSON.toJSONString(dataDTO));
+                    //currentSubpositionsResponseData过滤掉大于当前价格的订单
+                    // Filter positions where open average price is less than or equal to current price
+                    List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData2 = currentSubpositionsResponseData.stream()
+                            .filter(dataDTO -> dataDTO.getOpenAvgPx() != null && !dataDTO.getOpenAvgPx().isEmpty())
+                            .filter(dataDTO -> {
+                                double openAvgPx = Double.parseDouble(dataDTO.getOpenAvgPx());
+                                return openAvgPx <= currentPrice;
+                            })
+                            .collect(Collectors.toList());
+
+
+                    for (int i = 0; i < currentSubpositionsResponseData2.size(); i++) {
+                        CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData2.get(i);
+                        log.info("明细仓位：{} 信息：{}",i+1, JSON.toJSONString(dataDTO));
                         String subPosId = dataDTO.getSubPosId();
                         String openAvgPx = dataDTO.getOpenAvgPx();
                       log.info("当前价格高于订单价格 :{}", currentPrice - Double.parseDouble(openAvgPx));
