@@ -35,7 +35,7 @@ public class GridService {
     public MarketDataAPIService marketDataAPIService;
 
     String[] positions = {
-            "0.02", "0.02", "0.02",
+            "0.01", "0.02", "0.02",
             "0.04", "0.04", "0.04",
             "0.08", "0.08", "0.08",
             "0.1", "0.1", "0.1",
