@@ -410,9 +410,19 @@
 
     <build>
         <plugins>
+
+            <!-- 添加 spring-boot-maven-plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.7.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
 
@@ -423,6 +433,9 @@
                     <include>**/*.xml</include>
                     <include>**/*.properties</include>
                     <include>**/*.yml</include>
+                    <include>**/*.yaml</include>
+                    <include>application-*.yml</include>
+                    <include>application-*.yaml</include>
                 </includes>
             </resource>
         </resources>
