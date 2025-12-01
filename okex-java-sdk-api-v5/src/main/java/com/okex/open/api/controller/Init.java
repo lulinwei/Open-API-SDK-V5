@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct;
 @Component
 @Slf4j
 public class Init {
-    @Value("${my.data}")
+    @Value("${ropeok.app}")
     private String data;
 
     @PostConstruct

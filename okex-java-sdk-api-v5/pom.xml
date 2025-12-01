@@ -378,6 +378,9 @@
 
 
     </dependencies>
+
+
+
     <repositories>
         <repository>
             <id>jitpack.io</id>
@@ -412,6 +415,17 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.yml</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
 

@@ -6,5 +6,5 @@ logging:
      config: classpath:logback-prod.xml
 #     config: classpath:logback.xml
 
-my:
-  data: "dev"
+ropeok:
+  app:  "dev"
