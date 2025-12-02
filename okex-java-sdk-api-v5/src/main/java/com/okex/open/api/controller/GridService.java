@@ -197,7 +197,7 @@ public class GridService {
                                 closeSubposition.setSubPosId(subPosId);
                                 closeSubposition.setTag("");
                                 closeSubposition.setInstType("");
-                                closeSubposition.setSubPosType("");
+//                                closeSubposition.setSubPosType("");
                                 closeSubposition.setOrdType("");
                                 closeSubposition.setPx("");
                                 JSONObject jsonObject = copytradingAPIService.closeSubposition(closeSubposition);
