@@ -36,6 +36,10 @@
     </properties>
     <dependencies>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
 
         <!-- 移除原来的spring-context依赖，添加Spring Boot Web Starter -->
         <dependency>

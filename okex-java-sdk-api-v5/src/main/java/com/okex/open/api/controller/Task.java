@@ -17,8 +17,12 @@ public class Task {
 
     @Scheduled(fixedRate = 60000) // Execute every 60 seconds (1 minute)
     public void executeTask() {
-        log.info("-----------------Task executed at: " + new java.util.Date());
-        // Add your task logic here
-        gridService.getGrid();
+        try {
+            log.info("-----------------Task executed at: " + new java.util.Date());
+            // Add your task logic here
+            gridService.getGrid();
+        } catch (Exception e) {
+            log.error("定时任务执行出错: ", e);
+        }
     }
 }
