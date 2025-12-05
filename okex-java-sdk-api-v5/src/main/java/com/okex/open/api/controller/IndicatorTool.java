@@ -1,7 +1,9 @@
 package com.okex.open.api.controller;
 
 import com.tictactec.ta.lib.Core;
+import com.tictactec.ta.lib.MAType;
 import com.tictactec.ta.lib.MInteger;//package com.okex.open.api.controller;
+import com.tictactec.ta.lib.RetCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -55,50 +57,50 @@ public class IndicatorTool {
 //            return new double[0]; // 返回空数组或抛出异常
 //        }
 //    }
-//    public BollingerBands calBoll(List<FuturesCandlestick> futuresCandlesticks) {
-//        Core talib = new Core();
-//
-//        // Prepare input array for close prices
+    public BollingerBands calBoll(double[] closePrices) {
+        Core talib = new Core();
+
+        // Prepare input array for close prices
 //        double[] closePrices = futuresCandlesticks.stream()
 //                .mapToDouble(bar -> Double.valueOf(bar.getC()))
 //                .toArray();
-//
-//        // Output arrays for upper band, middle band, and lower band
-//        double[] upperBand = new double[closePrices.length];
-//        double[] middleBand = new double[closePrices.length];
-//        double[] lowerBand = new double[closePrices.length];
-//
-//        // Calculate Bollinger Bands
-//        int timePeriod = 20;
-//        double nbDevUp = 2.0;
-//        double nbDevDn = 2.0;
-//        MAType maType = MAType.Sma;
-//
-//        MInteger begin = new MInteger();
-//        MInteger length = new MInteger();
-//
-//        RetCode retCode = talib.bbands(0, closePrices.length - 1, closePrices,
-//                timePeriod, nbDevUp, nbDevDn, maType, begin, length,
-//                upperBand, middleBand, lowerBand);
-//
-//        if (retCode == RetCode.Success) {
-////            log.info("Bollinger Bands calculated successfully.");
-//            // 截取有效部分（从begin到length）
-//            int validLength = length.value;
-//            double[] validUpper = new double[validLength];
-//            double[] validMiddle = new double[validLength];
-//            double[] validLower = new double[validLength];
-//
-//            System.arraycopy(upperBand, 0, validUpper, 0, validLength);
-//            System.arraycopy(middleBand,0, validMiddle, 0, validLength);
-//            System.arraycopy(lowerBand,0, validLower, 0, validLength);
-//
-//            return new BollingerBands(validUpper, validMiddle, validLower);
-//        } else {
-//            log.error("Failed to calculate Bollinger Bands: {}", retCode);
-//            return new BollingerBands(new double[0], new double[0], new double[0]); // 返回空结果避免 null
-//        }
-//    }
+
+        // Output arrays for upper band, middle band, and lower band
+        double[] upperBand = new double[closePrices.length];
+        double[] middleBand = new double[closePrices.length];
+        double[] lowerBand = new double[closePrices.length];
+
+        // Calculate Bollinger Bands
+        int timePeriod = 20;
+        double nbDevUp = 2.0;
+        double nbDevDn = 2.0;
+        MAType maType = MAType.Sma;
+
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+
+        RetCode retCode = talib.bbands(0, closePrices.length - 1, closePrices,
+                timePeriod, nbDevUp, nbDevDn, maType, begin, length,
+                upperBand, middleBand, lowerBand);
+
+        if (retCode == RetCode.Success) {
+//            log.info("Bollinger Bands calculated successfully.");
+            // 截取有效部分（从begin到length）
+            int validLength = length.value;
+            double[] validUpper = new double[validLength];
+            double[] validMiddle = new double[validLength];
+            double[] validLower = new double[validLength];
+
+            System.arraycopy(upperBand, 0, validUpper, 0, validLength);
+            System.arraycopy(middleBand,0, validMiddle, 0, validLength);
+            System.arraycopy(lowerBand,0, validLower, 0, validLength);
+
+            return new BollingerBands(validUpper, validMiddle, validLower);
+        } else {
+            log.error("Failed to calculate Bollinger Bands: {}", retCode);
+            return new BollingerBands(new double[0], new double[0], new double[0]); // 返回空结果避免 null
+        }
+    }
 //    //增加一个计算atr的方法
 //    // 增加一个计算atr的方法
 //    public double[] atr(List<FuturesCandlestick> futuresCandlesticks, int period) {
@@ -450,41 +452,41 @@ public class IndicatorTool {
 //        }
 //        return kdjList == null ? Collections.emptyList() : kdjList;
 //    }
-//    public void boll(List<FuturesCandlestick> futuresCandlesticks) {
-//        Core talib = new Core();
-//
-//        // Prepare input array for close prices
+    public void boll(double[] closePrices) {
+        Core talib = new Core();
+
+        // Prepare input array for close prices
 //        double[] closePrices = futuresCandlesticks.stream().mapToDouble(bar -> Double.valueOf(bar.getC())).toArray();
-//
-//        // Output arrays for upper band, middle band, and lower band
-//        double[] upperBand = new double[closePrices.length];
-//        double[] middleBand = new double[closePrices.length];
-//        double[] lowerBand = new double[closePrices.length];
-//
-//        // Calculate Bollinger Bands
-//        int timePeriod = 20;
-//        double nbDevUp = 2.0;
-//        double nbDevDn = 2.0;
-//        MAType maType = MAType.Sma;
-//
-//
-//        MInteger begin = new MInteger();
-//        MInteger length = new MInteger();
-//
-//        RetCode retCode = talib.bbands(0, closePrices.length - 1, closePrices, timePeriod, nbDevUp, nbDevDn, maType, begin, length, upperBand, middleBand, lowerBand);
-//
-//        if (retCode == RetCode.Success) {
-//            System.out.println("Bollinger Bands calculated successfully.");
-//            // Now do something with the Bollinger Bands values...
-//            for (int i = begin.value; i < length.value; i++) {
-//                System.out.println("Upper Band[" + i + "] = " + upperBand[i]);
-//                System.out.println("Middle Band[" + i + "] = " + middleBand[i]);
-//                System.out.println("Lower Band[" + i + "] = " + lowerBand[i]);
-//            }
-//        } else {
-//            System.err.println("Failed to calculate Bollinger Bands: " + retCode);
-//        }
-//    }
+
+        // Output arrays for upper band, middle band, and lower band
+        double[] upperBand = new double[closePrices.length];
+        double[] middleBand = new double[closePrices.length];
+        double[] lowerBand = new double[closePrices.length];
+
+        // Calculate Bollinger Bands
+        int timePeriod = 20;
+        double nbDevUp = 2.0;
+        double nbDevDn = 2.0;
+        MAType maType = MAType.Sma;
+
+
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+
+        RetCode retCode = talib.bbands(0, closePrices.length - 1, closePrices, timePeriod, nbDevUp, nbDevDn, maType, begin, length, upperBand, middleBand, lowerBand);
+
+        if (retCode == RetCode.Success) {
+            System.out.println("Bollinger Bands calculated successfully.");
+            // Now do something with the Bollinger Bands values...
+            for (int i = begin.value; i < length.value; i++) {
+                System.out.println("Upper Band[" + i + "] = " + upperBand[i]);
+                System.out.println("Middle Band[" + i + "] = " + middleBand[i]);
+                System.out.println("Lower Band[" + i + "] = " + lowerBand[i]);
+            }
+        } else {
+            System.err.println("Failed to calculate Bollinger Bands: " + retCode);
+        }
+    }
 //
 //
 //    public static void main(String[] args) {

@@ -42,8 +42,8 @@ public class GridService {
             "0.16", "0.17", "0.18",
             "0.19", "0.2", "0.21",
             "0.22", "0.23", "0.24",
-            "0.25", "0.26", "0.27",
-            "0.28", "0.29", "0.3"
+            "0.25", "0.25", "0.25",
+            "0.25", "0.25", "0.25"
     };
 
     double[] profits = {
@@ -214,8 +214,15 @@ public class GridService {
                 IndicatorTool indicatorTool = new IndicatorTool();
                 double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                 double rsi = indicatorTool.rsi(pricesArray);
+                BollingerBands bollingerBands = indicatorTool.calBoll(pricesArray);
+                double[] lowerBand = bollingerBands.getLowerBand();
+                log.info("下轨：{}", lowerBand[lowerBand.length - 1]);
+                double[] middleBand = bollingerBands.getMiddleBand();
+                double[] upperBand = bollingerBands.getUpperBand();
+                log.info("中轨：{}", middleBand[middleBand.length - 1]);
+                log.info("上轨：{}", upperBand[upperBand.length - 1]);
                 log.info("RSI:{}", rsi);
-                if (rsi < 40) {
+                if (currentPrice<lowerBand[lowerBand.length - 1]) {
                     PlaceOrder placeOrder = new PlaceOrder();
                     placeOrder.setInstId("ETH-USDT-SWAP");
                     placeOrder.setTdMode("cross");
