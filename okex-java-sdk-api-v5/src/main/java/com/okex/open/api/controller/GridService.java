@@ -199,6 +199,7 @@ public class GridService {
                                     .collect(Collectors.toList());
                             if (!pricesFilter.isEmpty()) {
                                 double maxPrice = prices.stream().max(Double::compareTo).get();
+                                log.info("当前最高价格 :{}", maxPrice);
                                 //获取当前价格高于订单价格 50平仓
                                 if (currentPrice - Double.parseDouble(openAvgPx) >= 40) {
                                     log.info("追踪止盈中。。。。当前回测：{}",maxPrice - currentPrice);
