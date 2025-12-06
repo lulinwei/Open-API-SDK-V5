@@ -190,19 +190,35 @@ public class GridService {
                             log.info("明细仓位：{} 信息：{}", i + 1, JSON.toJSONString(dataDTO));
                             String subPosId = dataDTO.getSubPosId();
                             String openAvgPx = dataDTO.getOpenAvgPx();
+                            String openTime = dataDTO.getOpenTime();
                             log.info("当前价格高于订单价格 :{}", currentPrice - Double.parseDouble(openAvgPx));
-                            //获取当前价格高于订单价格 50平仓
-                            if (currentPrice - Double.parseDouble(openAvgPx) >= 50) {
-                                CloseSubposition closeSubposition = new CloseSubposition();
-                                closeSubposition.setSubPosId(subPosId);
-                                closeSubposition.setTag("");
-                                closeSubposition.setInstType("");
+                            //List<List<String>> ca 取最高价格 并且时间大于openTime
+                            List<Double> pricesFilter = ca.stream()
+                                    .filter(candlestick -> Long.parseLong(candlestick.get(0)) > Long.parseLong(openTime))
+                                    .map(candlestick -> Double.parseDouble(candlestick.get(4)))
+                                    .collect(Collectors.toList());
+                            if (!pricesFilter.isEmpty()) {
+                                double maxPrice = prices.stream().max(Double::compareTo).get();
+                                //获取当前价格高于订单价格 50平仓
+                                if (currentPrice - Double.parseDouble(openAvgPx) >= 40) {
+                                    log.info("追踪止盈中。。。。当前回测：{}",maxPrice - currentPrice);
+                                    //当最高价格回测10 则平仓
+                                    if (maxPrice - currentPrice >= 10) {
+                                        CloseSubposition closeSubposition = new CloseSubposition();
+                                        closeSubposition.setSubPosId(subPosId);
+                                        closeSubposition.setTag("");
+                                        closeSubposition.setInstType("");
 //                                closeSubposition.setSubPosType("");
-                                closeSubposition.setOrdType("");
-                                closeSubposition.setPx("");
-                                JSONObject jsonObject = copytradingAPIService.closeSubposition(closeSubposition);
-                                log.info("平仓结果：{}", JSON.toJSONString(jsonObject));
+                                        closeSubposition.setOrdType("");
+                                        closeSubposition.setPx("");
+                                        JSONObject jsonObject = copytradingAPIService.closeSubposition(closeSubposition);
+                                        log.info("平仓结果：{}", JSON.toJSONString(jsonObject));
+                                    }
+
+                                }
+
                             }
+
                         }
                     }
                 }
@@ -290,7 +306,7 @@ public class GridService {
         config.setPassphrase("Ropeok@123");
 
         config.setPrint(false);
-        /* config.setI18n(I18nEnum.SIMPLIFIED_CHINESE);*/
+/* config.setI18n(I18nEnum.SIMPLIFIED_CHINESE);*/
         config.setI18n(I18nEnum.ENGLISH);
         return config;
     }
