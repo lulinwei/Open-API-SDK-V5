@@ -227,7 +227,9 @@ public class GridService {
                 JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "5m", "100");
                 CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
                 List<List<String>> ca = candlesticksResponse.getData();
-                List<Double> prices = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
+                List<List<String>> sortedCandlesticks = ca.stream().sorted((c1, c2) -> Long.compare(Long.parseLong(c1.get(0)), Long.parseLong(c2.get(0))))
+                        .collect(Collectors.toList());
+                List<Double> prices = sortedCandlesticks.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
                 IndicatorTool indicatorTool = new IndicatorTool();
                 double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                 double rsi = indicatorTool.rsi(pricesArray);
