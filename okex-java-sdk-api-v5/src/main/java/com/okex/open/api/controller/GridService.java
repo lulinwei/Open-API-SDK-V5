@@ -66,7 +66,7 @@ public class GridService {
             50, 50, 50,
             50, 50, 50,
             50, 50, 50,
-            20, 20, 20
+            50, 50, 50
     };
 
     public GridService() {
