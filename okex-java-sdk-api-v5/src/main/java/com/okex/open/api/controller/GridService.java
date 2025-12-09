@@ -33,7 +33,7 @@ public class GridService {
     TradeAPIService tradeAPIService;
     public MarketDataAPIService marketDataAPIService;
 
-    String[] positions = {
+    String[] positionsOld = {
             "0.02", "0.02", "0.03",
             "0.04", "0.05", "0.06",
             "0.07", "0.08", "0.09",
@@ -44,6 +44,16 @@ public class GridService {
             "0.22", "0.23", "0.24",
             "0.25", "0.25", "0.25",
             "0.25", "0.25", "0.25"
+    };
+
+    String[] positions = {
+            "0.02", "0.04", "0.06",
+            "0.08", "0.1", "0.12",
+            "0.14", "0.16", "0.18",
+            "0.2", "0.22", "0.24",
+            "0.26", "0.28", "0.30",
+            "0.32", "0.34", "0.36",
+            "0.38", "0.40", "0.42"
     };
 
     double[] profits = {
