@@ -102,7 +102,14 @@ public class GridService {
                 log.info("整体汇总仓位信息：{}", JSON.toJSONString(position));
                 String liqPxStr = position.getLiqPx();
                 Double liqPx = Double.valueOf(("").equals(liqPxStr) ? "10000" : liqPxStr);
-                Double bePx = Double.valueOf(position.getBePx());
+                Double bePxNum = Double.valueOf(position.getBePx());
+//未实现收益
+                String upl = position.getUpl();
+                String realizedPnl = position.getRealizedPnl();
+                String avgPx = position.getAvgPx();
+                Double uplNum = Double.valueOf(upl);
+                Double realizedPnlNum = Double.valueOf(realizedPnl);
+                Double avgPxNum = Double.valueOf(avgPx);
 
                 JSONObject currentSubpositions = copytradingAPIService.currentSubpositions(instId, null, null, null, null, null, null);
 
@@ -118,19 +125,24 @@ public class GridService {
                 if (size >= profits.length) {
                     size = profits.length - 1;
                 }
-                log.info("整体当前价格跟盈亏价格比较 :{}", currentPrice - bePx);
+                log.info("整体整体盈亏情况 :{}", uplNum+realizedPnlNum);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
-                if (currentPrice - bePx >= profits[size]) {
-                    ClosePositions closePositions = new ClosePositions();
-                    closePositions.setInstId(instId);
-                    closePositions.setPosSide("long");
-                    closePositions.setMgnMode("cross");
-                    closePositions.setCcy("");
-                    closePositions.setClOrdId("");
-                    closePositions.setTag("");
-                    closePositions.setAutoCxl("false");
-                    JSONObject result = tradeAPIService.closePositions(closePositions);
-                    log.info("整体平仓结果：{}", JSON.toJSONString(result));
+                if (uplNum+realizedPnlNum>0) {
+                    log.info("进入整体盈亏平衡中。。。。{}",avgPxNum+10);
+
+                    if(currentPrice - bePxNum >= profits[size]){
+                        ClosePositions closePositions = new ClosePositions();
+                        closePositions.setInstId(instId);
+                        closePositions.setPosSide("long");
+                        closePositions.setMgnMode("cross");
+                        closePositions.setCcy("");
+                        closePositions.setClOrdId("");
+                        closePositions.setTag("");
+                        closePositions.setAutoCxl("false");
+                        JSONObject result = tradeAPIService.closePositions(closePositions);
+                        log.info("整体平仓结果：{}", JSON.toJSONString(result));
+                    }
+
                 } else {
                     // Using Java 8 streams
                     Optional<Double> minPriceOptional = currentSubpositionsResponseData.stream()
