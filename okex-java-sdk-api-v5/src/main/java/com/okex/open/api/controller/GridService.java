@@ -128,7 +128,10 @@ public class GridService {
                 log.info("整体整体盈亏情况 :{}  盈亏平衡价格：{}", uplNum+realizedPnlNum,bePxNum);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
                 if (uplNum+realizedPnlNum>0) {
-                    log.info("进入整体盈亏平衡中。。。。{}",bePxNum);
+                    if(uplNum+realizedPnlNum>0&&uplNum+realizedPnlNum<0.5){
+                        log.info("进入整体盈亏平衡。。。当前价格：{}。平衡价格：{}",currentPrice,bePxNum);
+                    }
+                    log.info("进入整体盈亏平衡中。。。当前价格：{}。平衡价格：{}",currentPrice,bePxNum);
 
                     if(currentPrice - bePxNum >= profits[size]){
                         ClosePositions closePositions = new ClosePositions();
