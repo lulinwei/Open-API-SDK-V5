@@ -226,7 +226,7 @@ public class GridService {
                                 double maxPrice = prices.stream().max(Double::compareTo).get();
                                 log.info("当前最高价格 :{}", maxPrice);
                                 //获取当前价格高于订单价格 50平仓
-                                if (currentPrice - Double.parseDouble(openAvgPx) >= 40) {
+                                if (currentPrice - Double.parseDouble(openAvgPx) >= 50) {
                                     log.info("追踪止盈中。。。。当前回测：{}",maxPrice - currentPrice);
                                     //当最高价格回测10 则平仓
                                     if (maxPrice - currentPrice >= 10) {
