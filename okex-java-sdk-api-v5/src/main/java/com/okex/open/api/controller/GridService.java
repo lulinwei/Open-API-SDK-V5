@@ -121,19 +121,19 @@ public class GridService {
                 // 添加边界检查
 // 添加边界检查
                 int size = currentSubpositionsResponseData.size();
-                log.info("带单数量：{}",size);
+                log.info("带单数量：{}", size);
                 if (size >= profits.length) {
                     size = profits.length - 1;
                 }
-                log.info("整体整体盈亏情况 :{}  盈亏平衡价格：{}", uplNum+realizedPnlNum,bePxNum);
+                log.info("整体整体盈亏情况 :{}  盈亏平衡价格：{}", uplNum + realizedPnlNum, bePxNum);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
-                if (uplNum+realizedPnlNum>0) {
-                    if(uplNum+realizedPnlNum>0&&uplNum+realizedPnlNum<0.5){
-                        log.info("进入整体盈亏平衡。。。当前价格：{}。平衡价格：{}",currentPrice,bePxNum);
+                if (uplNum + realizedPnlNum > 0) {
+                    if (uplNum + realizedPnlNum > 0 && uplNum + realizedPnlNum < 0.2) {
+                        log.info("进入整体盈亏平衡。。。当前价格：{}。平衡价格：{}", currentPrice, bePxNum);
                     }
-                    log.info("进入整体盈亏平衡中。。。当前价格：{}。平衡价格：{}",currentPrice,bePxNum);
+                    log.info("进入整体盈亏平衡中。。。当前价格：{}。平衡价格：{}", currentPrice, bePxNum);
 
-                    if(currentPrice - bePxNum >= profits[size]){
+                    if (currentPrice - bePxNum >= profits[size]) {
                         ClosePositions closePositions = new ClosePositions();
                         closePositions.setInstId(instId);
                         closePositions.setPosSide("long");
@@ -165,7 +165,7 @@ public class GridService {
                     log.info("当前带单 minPrice :{}   MACD金叉：{}", minPrice, macdGoldenCross);
                     //获取当前价格低于订单价格 50补仓
                     if (currentPrice < minPrice) {
-                        log.info("监测是否加仓中。。。。。最小价格跟当前价格相差：{}",minPrice - currentPrice);
+                        log.info("监测是否加仓中。。。。。最小价格跟当前价格相差：{}", minPrice - currentPrice);
                         if (minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)) {
                             //求 currentSubpositionsResponseData的最低价格
                             PlaceOrder placeOrder = new PlaceOrder();
@@ -227,7 +227,7 @@ public class GridService {
                                 log.info("当前最高价格 :{}", maxPrice);
                                 //获取当前价格高于订单价格 50平仓
                                 if (currentPrice - Double.parseDouble(openAvgPx) >= 50) {
-                                    log.info("追踪止盈中。。。。当前回测：{}",maxPrice - currentPrice);
+                                    log.info("追踪止盈中。。。。当前回测：{}", maxPrice - currentPrice);
                                     //当最高价格回测10 则平仓
                                     if (maxPrice - currentPrice >= 10) {
                                         CloseSubposition closeSubposition = new CloseSubposition();
@@ -266,7 +266,7 @@ public class GridService {
                 log.info("中轨：{}", middleBand[middleBand.length - 1]);
                 log.info("上轨：{}", upperBand[upperBand.length - 1]);
                 log.info("RSI:{}", rsi);
-                if (currentPrice<lowerBand[lowerBand.length - 1]) {
+                if (currentPrice < lowerBand[lowerBand.length - 1]) {
                     PlaceOrder placeOrder = new PlaceOrder();
                     placeOrder.setInstId("ETH-USDT-SWAP");
                     placeOrder.setTdMode("cross");
@@ -334,7 +334,7 @@ public class GridService {
         config.setPassphrase("Ropeok@123");
 
         config.setPrint(false);
-/* config.setI18n(I18nEnum.SIMPLIFIED_CHINESE);*/
+        /* config.setI18n(I18nEnum.SIMPLIFIED_CHINESE);*/
         config.setI18n(I18nEnum.ENGLISH);
         return config;
     }
