@@ -165,7 +165,7 @@ public class GridService {
                     log.info("当前带单 minPrice :{}   MACD金叉：{}", minPrice, macdGoldenCross);
                     //获取当前价格低于订单价格 50补仓
                     if (currentPrice < minPrice) {
-                        log.info("监测是否加仓中。。。。。最小价格跟当前价格相差：{}", minPrice - currentPrice);
+                        log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}",minPrice-50, minPrice - currentPrice);
                         if (minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)) {
                             //求 currentSubpositionsResponseData的最低价格
                             PlaceOrder placeOrder = new PlaceOrder();
