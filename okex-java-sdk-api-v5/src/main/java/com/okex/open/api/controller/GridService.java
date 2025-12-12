@@ -117,7 +117,7 @@ public class GridService {
 
                 List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
 //            log.info("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
-                log.info("整体盈利平仓间隔：{}", profits[currentSubpositionsResponseData.size()]);
+
                 // 添加边界检查
 // 添加边界检查
                 int size = currentSubpositionsResponseData.size();
@@ -126,6 +126,8 @@ public class GridService {
                     size = profits.length - 1;
                 }
                 log.info("整体整体盈亏情况 :{}  盈亏平衡价格：{}", uplNum + realizedPnlNum, bePxNum);
+                double profiInterval = profits[currentSubpositionsResponseData.size()];
+                log.info("整体盈利平仓间隔：{} 预计平仓价格：{}", profiInterval,profiInterval+ bePxNum);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
                 if (uplNum + realizedPnlNum > 0) {
 //                if (false) {
