@@ -128,7 +128,9 @@ public class GridService {
                 log.info("整体整体盈亏情况 :{}  盈亏平衡价格：{}", uplNum + realizedPnlNum, bePxNum);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
                 if (uplNum + realizedPnlNum > 0) {
-                    if (uplNum + realizedPnlNum > 0 && uplNum + realizedPnlNum < 0.2) {
+//                if (false) {
+
+                    if (uplNum + realizedPnlNum > 0 && uplNum + realizedPnlNum < 0.08) {
                         log.info("盈亏平衡价格核对。。。当前价格：{}。平衡价格：{}", currentPrice, bePxNum);
                     }
                     log.info("进入整体盈亏平衡中。。。当前价格：{}。平衡价格：{}", currentPrice, bePxNum);
@@ -226,7 +228,7 @@ public class GridService {
                                 double maxPrice = prices.stream().max(Double::compareTo).get();
                                 log.info("当前最高价格 :{}", maxPrice);
                                 //获取当前价格高于订单价格 50平仓
-                                if (currentPrice - Double.parseDouble(openAvgPx) >= 50) {
+                                if (currentPrice - Double.parseDouble(openAvgPx) >= 40) {
                                     log.info("追踪止盈中。。。。当前回测：{}", maxPrice - currentPrice);
                                     //当最高价格回测10 则平仓
                                     if (maxPrice - currentPrice >= 10) {
