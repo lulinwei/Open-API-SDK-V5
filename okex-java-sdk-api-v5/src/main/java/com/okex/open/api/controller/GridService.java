@@ -127,7 +127,7 @@ public class GridService {
                 }
                 log.info("整体整体盈亏情况 :{}  盈亏平衡价格：{}", uplNum + realizedPnlNum, bePxNum);
                 double profiInterval = profits[currentSubpositionsResponseData.size()];
-                log.info("整体盈利平仓间隔：{} 预计平仓价格：{}", profiInterval,profiInterval+ bePxNum);
+                log.info("整体盈利平仓间隔：{} 预计平仓价格：{}", profiInterval, profiInterval + bePxNum);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
                 if (uplNum + realizedPnlNum > 0) {
 //                if (false) {
@@ -169,7 +169,7 @@ public class GridService {
                     log.info("当前带单 minPrice :{}   MACD金叉：{}", minPrice, macdGoldenCross);
                     //获取当前价格低于订单价格 50补仓
                     if (currentPrice < minPrice) {
-                        log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}",minPrice-50, minPrice - currentPrice);
+                        log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", minPrice - 50, minPrice - currentPrice);
                         if (minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)) {
                             //求 currentSubpositionsResponseData的最低价格
                             PlaceOrder placeOrder = new PlaceOrder();
@@ -270,7 +270,7 @@ public class GridService {
                 log.info("中轨：{}", middleBand[middleBand.length - 1]);
                 log.info("上轨：{}", upperBand[upperBand.length - 1]);
                 log.info("RSI:{}", rsi);
-                if (currentPrice < lowerBand[lowerBand.length - 1]) {
+                if (currentPrice < lowerBand[lowerBand.length - 1] && currentPrice < 3300) {
                     PlaceOrder placeOrder = new PlaceOrder();
                     placeOrder.setInstId("ETH-USDT-SWAP");
                     placeOrder.setTdMode("cross");
