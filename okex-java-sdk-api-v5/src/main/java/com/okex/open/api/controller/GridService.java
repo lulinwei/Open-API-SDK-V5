@@ -116,7 +116,7 @@ public class GridService {
                 CurrentSubpositionsResponse currentSubpositionsResponse = JSON.toJavaObject(currentSubpositions, CurrentSubpositionsResponse.class);
 
                 List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
-            log.debug("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
+//            log.debug("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
 
                 // 添加边界检查
 // 添加边界检查
