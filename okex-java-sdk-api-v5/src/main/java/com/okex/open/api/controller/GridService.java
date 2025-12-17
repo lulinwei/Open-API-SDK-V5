@@ -157,20 +157,24 @@ public class GridService {
                             .map(dataDTO -> Double.parseDouble(dataDTO.getOpenAvgPx()))
                             .min(Double::compare);
 
-                    double minPrice = minPriceOptional.orElse(0.0);
+                    double orderMinPrice = minPriceOptional.orElse(0.0);
 
                     JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "1m", "100");
                     CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
                     List<List<String>> ca = candlesticksResponse.getData();
                     List<Double> prices = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
+                    List<Double> pricesLow = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
+                    //求pricesLow的最低 价格
+                    double minPriceLow = pricesLow.stream().min(Double::compare).orElse(0.0);
+                    log.info("最近100跟k线最低价格：{} 回调：{}", minPriceLow,currentPrice-minPriceLow);
                     IndicatorTool indicatorTool = new IndicatorTool();
                     double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                     boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
-                    log.info("当前带单 minPrice :{}   MACD金叉：{}", minPrice, macdGoldenCross);
+                    log.info("当前带单 orderMinPrice :{}   MACD金叉：{}", orderMinPrice, macdGoldenCross);
                     //获取当前价格低于订单价格 50补仓
-                    if (currentPrice < minPrice) {
-                        log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", minPrice - 50, minPrice - currentPrice);
-                        if (minPrice - currentPrice > 50 && macdGoldenCross && ("").equals(liqPxStr)) {
+                    if (currentPrice < orderMinPrice) {
+                        log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", orderMinPrice - 50, orderMinPrice - currentPrice);
+                        if (orderMinPrice - currentPrice > 50 && currentPrice-minPriceLow>15 && ("").equals(liqPxStr)) {
                             //求 currentSubpositionsResponseData的最低价格
                             PlaceOrder placeOrder = new PlaceOrder();
                             placeOrder.setInstId("ETH-USDT-SWAP");
