@@ -129,8 +129,8 @@ public class GridService {
                 double profiInterval = profits[currentSubpositionsResponseData.size()];
                 log.info("整体盈利平仓间隔：{} 预计平仓价格：{}", profiInterval, profiInterval + bePxNum);
 //            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
-                if (uplNum + realizedPnlNum > 0) {
-//                if (false) {
+//                if (uplNum + realizedPnlNum > 0) {
+                if (false) {
 
                     if (uplNum + realizedPnlNum > 0 && uplNum + realizedPnlNum < 0.08) {
                         log.info("盈亏平衡价格核对。。。当前价格：{}。平衡价格：{}", currentPrice, bePxNum);
