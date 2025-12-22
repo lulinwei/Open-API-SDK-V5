@@ -150,7 +150,8 @@ public class GridService {
                         log.info("整体平仓结果：{}", JSON.toJSONString(result));
                     }
 
-                } else {
+                }
+                else {
                     // Using Java 8 streams
                     Optional<Double> minPriceOptional = currentSubpositionsResponseData.stream()
                             .filter(dataDTO -> dataDTO.getOpenAvgPx() != null && !dataDTO.getOpenAvgPx().isEmpty())
@@ -174,7 +175,7 @@ public class GridService {
                     //获取当前价格低于订单价格 50补仓
                     if (currentPrice < orderMinPrice) {
                         log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", orderMinPrice - 50, orderMinPrice - currentPrice);
-                        if (orderMinPrice - currentPrice > 50 && currentPrice-minPriceLow>15 && ("").equals(liqPxStr)) {
+                        if (orderMinPrice - currentPrice > 50 && currentPrice-minPriceLow>6 && ("").equals(liqPxStr)) {
                             //求 currentSubpositionsResponseData的最低价格
                             PlaceOrder placeOrder = new PlaceOrder();
                             placeOrder.setInstId("ETH-USDT-SWAP");
