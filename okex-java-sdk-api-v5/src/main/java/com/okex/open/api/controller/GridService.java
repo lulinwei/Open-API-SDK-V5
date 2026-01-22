@@ -297,7 +297,8 @@ public class GridService {
                         }
                     }
                 }
-            } else if (filteredPositions.size() == 0) {
+            }
+            else if (filteredPositions.size() == 0) {
                 JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "5m", "100");
                 CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
                 List<List<String>> ca = candlesticksResponse.getData();
