@@ -69,19 +69,59 @@ public class GridService {
             50, 50, 50
     };
 
-    public GridService() {
-        this.config = this.config();
+//    public GridService() {
+//        this.config = this.config();
+//        this.copytradingAPIService = new CopytradingAPIServiceImpl(this.config);
+//        tradeAPIService = new TradeAPIServiceImpl(this.config);
+//        marketDataAPIService = new MarketDataAPIServiceImpl(config);
+//        this.accountAPIService = new AccountAPIServiceImpl(this.config);
+//    }
+    public void initializeWithConfig(APIConfiguration config) {
+        this.config = config;
         this.copytradingAPIService = new CopytradingAPIServiceImpl(this.config);
-        tradeAPIService = new TradeAPIServiceImpl(this.config);
-        marketDataAPIService = new MarketDataAPIServiceImpl(config);
+        this.tradeAPIService = new TradeAPIServiceImpl(this.config);
+        this.marketDataAPIService = new MarketDataAPIServiceImpl(config);
         this.accountAPIService = new AccountAPIServiceImpl(this.config);
     }
+
+    private APIConfiguration createConfigForUser(OkexApiUser user) {
+        APIConfiguration config = new APIConfiguration();
+
+        //传入https://www.okx.com 或 https://aws.okx.com
+        //you can set the domain as https://www.okx.com or https://aws.okx.com
+        config.setDomain("https://www.okx.com");
+
+//        config.setApiKey("b7959169-9e2a-44c7-bcee-84944cb8b850");
+//        config.setSecretKey("779E65D4653FAE85E620AE1E7CA2F8B4");
+//        //请求模拟盘的接口需要传入1，否则传入0
+//        //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
+//        config.setxSimulatedTrading("1");
+
+        config.setApiKey(user.getApiKey());
+        config.setSecretKey(user.getSecretKey());
+        //请求模拟盘的接口需要传入1，否则传入0
+        //if you want to request the endpoint in demo trading,please input 1,otherwise,please input 0
+        config.setxSimulatedTrading("0");
+
+        config.setPassphrase(user.getPassPhrase());
+
+        config.setPrint(false);
+        /* config.setI18n(I18nEnum.SIMPLIFIED_CHINESE);*/
+        config.setI18n(I18nEnum.ENGLISH);
+        return config;
+    }
+
 
     public String instId = "ETH-USDT-SWAP";
     private AccountAPIService accountAPIService;
 
-    public String getGrid() {
+    public String processForUser(OkexApiUser user) {
         try {
+
+            // 使用用户特定的API配置初始化服务
+            APIConfiguration userConfig = createConfigForUser(user);
+            initializeWithConfig(userConfig);
+
             JSONObject ticker = this.marketDataAPIService.getTicker(instId);
             TickerResponse tickerResponse = JSON.toJavaObject(ticker, TickerResponse.class);
             String last = tickerResponse.getData().get(0).getLast();

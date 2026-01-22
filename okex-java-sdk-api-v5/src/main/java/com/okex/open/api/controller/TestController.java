@@ -17,7 +17,7 @@ public class TestController {
     public String hello() {
 
 
-        gridService.getGrid();
+//        gridService.getGrid();
 
         return "Hello, OKEX API!";
     }
