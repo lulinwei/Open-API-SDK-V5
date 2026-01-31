@@ -24,7 +24,7 @@ public class Task {
             // Add your task logic here
             List<OkexApiUser> okexApiList = new ArrayList<>();
             okexApiList.add(new OkexApiUser("2598faab-8351-4e0d-8fd3-d91ea92bb693", "5E2CA393CF4466489F2FAFAF77FCD3F2", "Ropeok@123"));
-            okexApiList.add(new OkexApiUser("2", "2", "2"));
+//            okexApiList.add(new OkexApiUser("2", "2", "2"));
 //            gridService.processForUser();
             for (OkexApiUser user : okexApiList) {
                 try {
