@@ -33,9 +33,9 @@ U本位合约：张数=USDT数量/最新成交价/合约面值
 币本位合约：张数=USDT数量/合约面值
 最大可开还需要乘以杠杆 也可以用这个公式计算
 
-https://www.okx.com/docs-v5/zh/#public-data-rest-api-unit-convert  这个接口可以进行转换
+https://www.okx.com/docs-v5/zh/#public-data-rest-api-unit-convert 这个接口可以进行转换
 
-https://www.okx.com/docs-v5/zh/#trading-account-rest-api-get-instruments  这个接口的ctval
+https://www.okx.com/docs-v5/zh/#trading-account-rest-api-get-instruments 这个接口的ctval
 
 
 全仓模式（现货和合约）：维持保证金率 = （该币种全仓余额 + 全仓收益 - 该币种挂单卖出数量 - 期权买单所需数量 - 逐仓开仓所需数量 - 所有挂单手续费）/（维持保证金 + 爆仓手续费）跨币种保证金模式（全仓）：维持保证金率 = 有效保证金 /（维持保证金 + 爆仓手续费）逐仓模式（币本位/USDT保证金合约）：币本位：维持保证金率 =（保证金余额 + 收益）/（面值 × |张数| / 标记价格 ×（维持保证金 + 爆仓手续费））USDT本位：维持保证金率 =（保证金余额 + 收益）/（面值 × |张数| × 标记价格 ×（维持保证金 + 爆仓手续费））
