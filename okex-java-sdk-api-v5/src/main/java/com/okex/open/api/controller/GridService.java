@@ -46,7 +46,7 @@ public class GridService {
             "0.25", "0.25", "0.25"
     };
 
-    String[] positions = {
+    String[] longPositions = {
             "0.02", "0.04", "0.06",
             "0.08", "0.1", "0.12",
             "0.14", "0.16", "0.18",
@@ -55,6 +55,17 @@ public class GridService {
             "0.32", "0.34", "0.36",
             "0.38", "0.40", "0.42"
     };
+
+    String[] shortPositions = {
+            "0.01", "0.01", "0.01",
+            "0.01", "0.01", "0.01",
+            "0.01", "0.01", "0.01",
+            "0.01", "0.01", "0.01",
+            "0.01", "0.01", "0.01",
+            "0.01", "0.01", "0.01",
+            "0.01", "0.01", "0.01"
+    };
+
 
     double[] profits = {
             50, 50, 50,
@@ -115,7 +126,7 @@ public class GridService {
     public String instId = "ETH-USDT-SWAP";
     private AccountAPIService accountAPIService;
 
-    public String processForUser(OkexApiUser user) {
+    public Boolean processForUser(OkexApiUser user) {
         try {
 
             // 使用用户特定的API配置初始化服务
@@ -132,17 +143,26 @@ public class GridService {
             JSONObject positions = this.accountAPIService.getPositions("SWAP", instId, null);
             PositionsResponse positionsResponse = JSON.toJavaObject(positions, PositionsResponse.class);
             List<PositionsResponse.DataDTO> postions = positionsResponse.getData();
-            List<PositionsResponse.DataDTO> filteredPositions = postions.stream()
-                    .filter(position -> !"0".equals(position.getPos()))
+            List<PositionsResponse.DataDTO> longPositions = postions.stream()
+                    .filter(position -> !"0".equals(position.getPos())).filter(position-> "long".equals(position.getPosSide()))
                     .collect(Collectors.toList());
 
-            if (filteredPositions.size() > 0) {
+            List<PositionsResponse.DataDTO> shortPositions = postions.stream()
+                    .filter(position -> !"0".equals(position.getPos())).filter(position-> "short".equals(position.getPosSide()))
+                    .collect(Collectors.toList());
+
+            if (handleLong(longPositions, postions, currentPrice)) return false;
+
+
+            if (shortPositions.size() > 0) {
+//            if (true) {
                 //整体盈利 一键平仓
-                PositionsResponse.DataDTO position = postions.get(0);
+                PositionsResponse.DataDTO position = shortPositions.get(0);
                 log.info("整体汇总仓位信息：{}", JSON.toJSONString(position));
                 String liqPxStr = position.getLiqPx();
-                Double liqPx = Double.valueOf(("").equals(liqPxStr) ? "10000" : liqPxStr);
-                Double bePxNum = Double.valueOf(position.getBePx());
+                Double liqPx = Double.valueOf(("").equals(liqPxStr) ? "1" : liqPxStr);
+                String bePxStr = position.getBePx();
+                Double bePxNum = Double.valueOf(("").equals(bePxStr) ? "1" : bePxStr);
 //未实现收益
                 String upl = position.getUpl();
                 String realizedPnl = position.getRealizedPnl();
@@ -156,18 +176,21 @@ public class GridService {
                 JSONObject currentSubpositions = copytradingAPIService.currentSubpositions(instId, null, null, null, null, null, null);
 
                 CurrentSubpositionsResponse currentSubpositionsResponse = JSON.toJavaObject(currentSubpositions, CurrentSubpositionsResponse.class);
-
-                List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
+                List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseDataAll = currentSubpositionsResponse.getData();
+                List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponseDataAll.stream()
+                        .filter(dataDTO -> "short".equals(dataDTO.getPosSide()))
+                        .collect(Collectors.toList());
+//                List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponse.getData();
 //            log.debug("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
 
                 // 添加边界检查
 // 添加边界检查
                 int size = currentSubpositionsResponseData.size();
                 log.info("带单数量：{}  持仓usdt：{}", size, notionlUsd);
-                if (notionlUsd > 1000) {
-                    log.info("触发风控 带单仓位usdt大于1000，停止策略");
-                    return "带单仓位usdt大于1000";
-                }
+//                if (notionlUsd > 1000) {
+//                    log.info("触发风控 带单仓位usdt大于1000，停止策略");
+//                    return "带单仓位usdt大于1000";
+//                }
                 if (size >= profits.length) {
                     size = profits.length - 1;
                 }
@@ -196,31 +219,33 @@ public class GridService {
                         log.info("整体平仓结果：{}", JSON.toJSONString(result));
                     }
 
-                } else {
+                }
+                else {
                     // Using Java 8 streams
-                    Optional<Double> minPriceOptional = currentSubpositionsResponseData.stream()
+                    Optional<Double> maxPriceOptional = currentSubpositionsResponseData.stream()
                             .filter(dataDTO -> dataDTO.getOpenAvgPx() != null && !dataDTO.getOpenAvgPx().isEmpty())
                             .map(dataDTO -> Double.parseDouble(dataDTO.getOpenAvgPx()))
-                            .min(Double::compare);
+                            .max(Double::compare);
 
-                    double orderMinPrice = minPriceOptional.orElse(0.0);
+                    double orderMaxPrice = maxPriceOptional.orElse(0.0);
+
 
                     JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "1m", "100");
                     CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
                     List<List<String>> ca = candlesticksResponse.getData();
                     List<Double> prices = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
-                    List<Double> pricesLow = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
+                    List<Double> pricesHingh = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(2))).collect(Collectors.toList());
                     //求pricesLow的最低 价格
-                    double minPriceLow = pricesLow.stream().min(Double::compare).orElse(0.0);
-                    log.info("最近100跟k线最低价格：{} 回调：{}", minPriceLow, currentPrice - minPriceLow);
+                    double maxPriceLow = pricesHingh.stream().max(Double::compare).orElse(0.0);
+                    log.info("最近100跟k线最低价格：{} 回调：{}", maxPriceLow, currentPrice - maxPriceLow);
                     IndicatorTool indicatorTool = new IndicatorTool();
                     double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
                     boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
-                    log.info("当前带单 orderMinPrice :{}   MACD金叉：{}", orderMinPrice, macdGoldenCross);
+                    log.info("当前带单 orderMaxPrice :{}   MACD金叉：{}", orderMaxPrice, macdGoldenCross);
                     //获取当前价格低于订单价格 50补仓
-                    if (currentPrice < orderMinPrice) {
-                        log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", orderMinPrice - 50, orderMinPrice - currentPrice);
-                        if (orderMinPrice - currentPrice > 50 && currentPrice - minPriceLow > 6 && ("").equals(liqPxStr)) {
+                    if (currentPrice > orderMaxPrice) {
+                        log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", orderMaxPrice + 50, currentPrice-orderMaxPrice);
+                        if ( currentPrice-orderMaxPrice > 50 &&  maxPriceLow-currentPrice > 6 && ("").equals(liqPxStr)) {
                             //求 currentSubpositionsResponseData的最低价格
                             PlaceOrder placeOrder = new PlaceOrder();
                             placeOrder.setInstId("ETH-USDT-SWAP");
@@ -231,15 +256,15 @@ public class GridService {
                             placeOrder.setClOrdId("RK" + System.currentTimeMillis());
 
 //        placeOrder.setTag("");
-                            placeOrder.setSide("buy");
-                            placeOrder.setPosSide("long");
+                            placeOrder.setSide("sell");
+                            placeOrder.setPosSide("short");
 //        placeOrder.setOrdType("limit");
                             placeOrder.setOrdType("market");
 //                        int size = currentSubpositionsResponseData.size();
-                            if (size >= this.positions.length) {
-                                size = this.positions.length - 1;
+                            if (size >= this.shortPositions.length) {
+                                size = this.shortPositions.length - 1;
                             }
-                            placeOrder.setSz(this.positions[size]);
+                            placeOrder.setSz(this.shortPositions[size]);
                             placeOrder.setQuickMgnType("");
 
 //        placeOrder.setPx("1500");
@@ -247,9 +272,9 @@ public class GridService {
 //        placeOrder.setTgtCcy("");
 //        placeOrder.setBanAmend(false);
 
-                            JSONObject result = tradeAPIService.placeOrder(placeOrder);
-                            PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
-                            log.info("下单结果：{}", JSON.toJSONString(placeOrder2));
+//                            JSONObject result = tradeAPIService.placeOrder(placeOrder);
+//                            PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
+//                            log.info("下单结果：{}", JSON.toJSONString(placeOrder2));
                         }
 
                     } else {
@@ -291,8 +316,8 @@ public class GridService {
 //                                closeSubposition.setSubPosType("");
                                         closeSubposition.setOrdType("");
                                         closeSubposition.setPx("");
-                                        JSONObject jsonObject = copytradingAPIService.closeSubposition(closeSubposition);
-                                        log.info("平仓结果：{}", JSON.toJSONString(jsonObject));
+//                                        JSONObject jsonObject = copytradingAPIService.closeSubposition(closeSubposition);
+//                                        log.info("平仓结果：{}", JSON.toJSONString(jsonObject));
                                     }
 
                                 }
@@ -302,8 +327,9 @@ public class GridService {
                         }
                     }
                 }
-            } else if (filteredPositions.size() == 0) {
-                JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "5m", "100");
+            } else
+            if (shortPositions.size() == 0) {
+                JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "15m", "100");
                 CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
                 List<List<String>> ca = candlesticksResponse.getData();
                 List<List<String>> sortedCandlesticks = ca.stream().sorted((c1, c2) -> Long.compare(Long.parseLong(c1.get(0)), Long.parseLong(c2.get(0))))
@@ -320,7 +346,7 @@ public class GridService {
                 log.info("中轨：{}", middleBand[middleBand.length - 1]);
                 log.info("上轨：{}", upperBand[upperBand.length - 1]);
                 log.info("RSI:{}", rsi);
-                if (currentPrice < lowerBand[lowerBand.length - 1] && currentPrice < 3300) {
+                if (currentPrice > upperBand[upperBand.length - 1] && currentPrice < 3300) {
                     PlaceOrder placeOrder = new PlaceOrder();
                     placeOrder.setInstId("ETH-USDT-SWAP");
                     placeOrder.setTdMode("cross");
@@ -330,11 +356,11 @@ public class GridService {
                     placeOrder.setClOrdId("RK" + System.currentTimeMillis());
 
 //        placeOrder.setTag("");
-                    placeOrder.setSide("buy");
-                    placeOrder.setPosSide("long");
+                    placeOrder.setSide("sell");
+                    placeOrder.setPosSide("short");
 //        placeOrder.setOrdType("limit");
                     placeOrder.setOrdType("market");
-                    placeOrder.setSz(this.positions[0]);
+                    placeOrder.setSz(this.shortPositions[0]);
                     placeOrder.setQuickMgnType("");
 
 //        placeOrder.setPx("1500");
@@ -351,7 +377,227 @@ public class GridService {
             log.error("执行网格交易时发生错误: ", e);
         }
 
-        return "getGrid";
+        return true;
+    }
+
+    private boolean handleLong(List<PositionsResponse.DataDTO> longPositions, List<PositionsResponse.DataDTO> postions, double currentPrice) {
+        if (longPositions.size() > 0) {
+            //整体盈利 一键平仓
+            PositionsResponse.DataDTO position = longPositions.get(0);
+            log.info("整体汇总仓位信息：{}", JSON.toJSONString(position));
+            String liqPxStr = position.getLiqPx();
+            Double liqPx = Double.valueOf(("").equals(liqPxStr) ? "10000" : liqPxStr);
+            Double bePxNum = Double.valueOf(position.getBePx());
+//未实现收益
+            String upl = position.getUpl();
+            String realizedPnl = position.getRealizedPnl();
+            String avgPx = position.getAvgPx();
+            Double uplNum = Double.valueOf(upl);
+            Double realizedPnlNum = Double.valueOf(realizedPnl);
+            Double avgPxNum = Double.valueOf(avgPx);
+            String notionalUsd = position.getNotionalUsd();
+            Double notionlUsd = Double.valueOf(notionalUsd);
+
+            JSONObject currentSubpositions = copytradingAPIService.currentSubpositions(instId, null, null, null, null, null, null);
+
+            CurrentSubpositionsResponse currentSubpositionsResponse = JSON.toJavaObject(currentSubpositions, CurrentSubpositionsResponse.class);
+
+            List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseDataAll = currentSubpositionsResponse.getData();
+            List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData = currentSubpositionsResponseDataAll.stream()
+                    .filter(dataDTO -> "long".equals(dataDTO.getPosSide()))
+                    .collect(Collectors.toList());
+
+//            log.debug("明细仓位信息：{}", JSON.toJSONString(currentSubpositionsResponseData));
+
+            // 添加边界检查
+// 添加边界检查
+            int size = currentSubpositionsResponseData.size();
+            log.info("带单数量：{}  持仓usdt：{}", size, notionlUsd);
+            if (notionlUsd > 1000) {
+                log.info("触发风控 带单仓位usdt大于1000，停止策略");
+                return true;
+            }
+            if (size >= profits.length) {
+                size = profits.length - 1;
+            }
+            log.info("整体整体盈亏情况 :{}  盈亏平衡价格：{}", uplNum + realizedPnlNum, bePxNum);
+            double profiInterval = profits[currentSubpositionsResponseData.size()];
+            log.info("整体盈利平仓间隔：{} 预计平仓价格：{}", profiInterval, profiInterval + bePxNum);
+//            if (bePx - currentPrice > profits[currentSubpositionsResponseData.size()] && Double.valueOf(position.getUpl()) + Double.valueOf(position.getRealizedPnl()) > 10) {
+//                if (uplNum + realizedPnlNum > 0) {
+            if (false) {
+
+                if (uplNum + realizedPnlNum > 0 && uplNum + realizedPnlNum < 0.08) {
+                    log.info("盈亏平衡价格核对。。。当前价格：{}。平衡价格：{}", currentPrice, bePxNum);
+                }
+                log.info("进入整体盈亏平衡中。。。当前价格：{}。平衡价格：{}", currentPrice, bePxNum);
+
+                if (currentPrice - bePxNum >= profits[size]) {
+                    ClosePositions closePositions = new ClosePositions();
+                    closePositions.setInstId(instId);
+                    closePositions.setPosSide("long");
+                    closePositions.setMgnMode("cross");
+                    closePositions.setCcy("");
+                    closePositions.setClOrdId("");
+                    closePositions.setTag("");
+                    closePositions.setAutoCxl("false");
+                    JSONObject result = tradeAPIService.closePositions(closePositions);
+                    log.info("整体平仓结果：{}", JSON.toJSONString(result));
+                }
+
+            } else {
+                // Using Java 8 streams
+                Optional<Double> minPriceOptional = currentSubpositionsResponseData.stream()
+                        .filter(dataDTO -> dataDTO.getOpenAvgPx() != null && !dataDTO.getOpenAvgPx().isEmpty())
+                        .map(dataDTO -> Double.parseDouble(dataDTO.getOpenAvgPx()))
+                        .min(Double::compare);
+
+                double orderMinPrice = minPriceOptional.orElse(0.0);
+
+                JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "1m", "100");
+                CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
+                List<List<String>> ca = candlesticksResponse.getData();
+                List<Double> prices = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
+                List<Double> pricesLow = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
+                //求pricesLow的最低 价格
+                double minPriceLow = pricesLow.stream().min(Double::compare).orElse(0.0);
+                log.info("最近100跟k线最低价格：{} 回调：{}", minPriceLow, currentPrice - minPriceLow);
+                IndicatorTool indicatorTool = new IndicatorTool();
+                double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
+                boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
+                log.info("当前带单 orderMinPrice :{}   MACD金叉：{}", orderMinPrice, macdGoldenCross);
+                //获取当前价格低于订单价格 50补仓
+                if (currentPrice < orderMinPrice) {
+                    log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", orderMinPrice - 50, orderMinPrice - currentPrice);
+                    if (orderMinPrice - currentPrice > 50 && currentPrice - minPriceLow > 6 && ("").equals(liqPxStr)) {
+                        //求 currentSubpositionsResponseData的最低价格
+                        PlaceOrder placeOrder = new PlaceOrder();
+                        placeOrder.setInstId("ETH-USDT-SWAP");
+                        placeOrder.setTdMode("cross");
+//        placeOrder.setCcy("USDT");
+//                    placeOrder.setClOrdId("RK00003");
+                        // Replace the fixed ClOrdId with current timestamp
+                        placeOrder.setClOrdId("RK" + System.currentTimeMillis());
+
+//        placeOrder.setTag("");
+                        placeOrder.setSide("buy");
+                        placeOrder.setPosSide("long");
+//        placeOrder.setOrdType("limit");
+                        placeOrder.setOrdType("market");
+//                        int size = currentSubpositionsResponseData.size();
+                        if (size >= this.longPositions.length) {
+                            size = this.longPositions.length - 1;
+                        }
+                        placeOrder.setSz(this.longPositions[size]);
+                        placeOrder.setQuickMgnType("");
+
+//        placeOrder.setPx("1500");
+//        placeOrder.setReduceOnly(false);
+//        placeOrder.setTgtCcy("");
+//        placeOrder.setBanAmend(false);
+
+                        JSONObject result = tradeAPIService.placeOrder(placeOrder);
+                        PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
+                        log.info("下单结果：{}", JSON.toJSONString(placeOrder2));
+                    }
+
+                } else {
+                    log.info("监测是否平仓中。。。。。");
+                    //currentSubpositionsResponseData过滤掉大于当前价格的订单
+                    // Filter positions where open average price is less than or equal to current price
+                    List<CurrentSubpositionsResponse.DataDTO> currentSubpositionsResponseData2 = currentSubpositionsResponseData.stream()
+                            .filter(dataDTO -> dataDTO.getOpenAvgPx() != null && !dataDTO.getOpenAvgPx().isEmpty())
+                            .filter(dataDTO -> {
+                                double openAvgPx = Double.parseDouble(dataDTO.getOpenAvgPx());
+                                return openAvgPx <= currentPrice;
+                            })
+                            .collect(Collectors.toList());
+
+                    for (int i = 0; i < currentSubpositionsResponseData2.size(); i++) {
+                        CurrentSubpositionsResponse.DataDTO dataDTO = currentSubpositionsResponseData2.get(i);
+                        log.info("明细仓位：{} 信息：{}", i + 1, JSON.toJSONString(dataDTO));
+                        String subPosId = dataDTO.getSubPosId();
+                        String openAvgPx = dataDTO.getOpenAvgPx();
+                        String openTime = dataDTO.getOpenTime();
+                        log.info("当前价格高于订单价格 :{}", currentPrice - Double.parseDouble(openAvgPx));
+                        //List<List<String>> ca 取最高价格 并且时间大于openTime
+                        List<Double> pricesFilter = ca.stream()
+                                .filter(candlestick -> Long.parseLong(candlestick.get(0)) > Long.parseLong(openTime))
+                                .map(candlestick -> Double.parseDouble(candlestick.get(4)))
+                                .collect(Collectors.toList());
+                        if (!pricesFilter.isEmpty()) {
+                            double maxPrice = prices.stream().max(Double::compareTo).get();
+                            log.info("当前最高价格 :{}", maxPrice);
+                            //获取当前价格高于订单价格 50平仓
+                            if (currentPrice - Double.parseDouble(openAvgPx) >= 40) {
+                                log.info("追踪止盈中。。。。当前回测：{}", maxPrice - currentPrice);
+                                //当最高价格回测10 则平仓
+                                if (maxPrice - currentPrice >= 10) {
+                                    CloseSubposition closeSubposition = new CloseSubposition();
+                                    closeSubposition.setSubPosId(subPosId);
+                                    closeSubposition.setTag("");
+                                    closeSubposition.setInstType("");
+//                                closeSubposition.setSubPosType("");
+                                    closeSubposition.setOrdType("");
+                                    closeSubposition.setPx("");
+                                    JSONObject jsonObject = copytradingAPIService.closeSubposition(closeSubposition);
+                                    log.info("平仓结果：{}", JSON.toJSONString(jsonObject));
+                                }
+
+                            }
+
+                        }
+
+                    }
+                }
+            }
+        } else
+            if (longPositions.size() == 0) {
+            JSONObject candlesticks = this.marketDataAPIService.getCandlesticks(instId, null, null, "5m", "100");
+            CandlesticksResponse candlesticksResponse = JSON.toJavaObject(candlesticks, CandlesticksResponse.class);
+            List<List<String>> ca = candlesticksResponse.getData();
+            List<List<String>> sortedCandlesticks = ca.stream().sorted((c1, c2) -> Long.compare(Long.parseLong(c1.get(0)), Long.parseLong(c2.get(0))))
+                    .collect(Collectors.toList());
+            List<Double> prices = sortedCandlesticks.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
+            IndicatorTool indicatorTool = new IndicatorTool();
+            double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
+            double rsi = indicatorTool.rsi(pricesArray);
+            BollingerBands bollingerBands = indicatorTool.calBoll(pricesArray);
+            double[] lowerBand = bollingerBands.getLowerBand();
+            log.info("下轨：{}", lowerBand[lowerBand.length - 1]);
+            double[] middleBand = bollingerBands.getMiddleBand();
+            double[] upperBand = bollingerBands.getUpperBand();
+            log.info("中轨：{}", middleBand[middleBand.length - 1]);
+            log.info("上轨：{}", upperBand[upperBand.length - 1]);
+            log.info("RSI:{}", rsi);
+            if (currentPrice < lowerBand[lowerBand.length - 1] && currentPrice < 3300) {
+                PlaceOrder placeOrder = new PlaceOrder();
+                placeOrder.setInstId("ETH-USDT-SWAP");
+                placeOrder.setTdMode("cross");
+//        placeOrder.setCcy("USDT");
+//                    placeOrder.setClOrdId("RK00003");
+                // Replace the fixed ClOrdId with current timestamp
+                placeOrder.setClOrdId("RK" + System.currentTimeMillis());
+
+//        placeOrder.setTag("");
+                placeOrder.setSide("buy");
+                placeOrder.setPosSide("long");
+//        placeOrder.setOrdType("limit");
+                placeOrder.setOrdType("market");
+                placeOrder.setSz(this.longPositions[0]);
+                placeOrder.setQuickMgnType("");
+
+//        placeOrder.setPx("1500");
+//        placeOrder.setReduceOnly(false);
+//        placeOrder.setTgtCcy("");
+//        placeOrder.setBanAmend(false);
+
+                JSONObject result = tradeAPIService.placeOrder(placeOrder);
+                PlaceOrderResponse placeOrder2 = JSON.toJavaObject(result, PlaceOrderResponse.class);
+                log.info("首单 下单结果：{}", JSON.toJSONString(placeOrder2));
+            }
+        }
+        return false;
     }
 
     public void closePositions() {

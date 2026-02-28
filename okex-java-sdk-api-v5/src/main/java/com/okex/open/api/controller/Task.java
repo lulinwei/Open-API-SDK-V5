@@ -23,7 +23,7 @@ public class Task {
             log.info("-----------------Task executed at: " + new java.util.Date());
             // Add your task logic here
             List<OkexApiUser> okexApiList = new ArrayList<>();
-            okexApiList.add(new OkexApiUser("2598faab-8351-4e0d-8fd3-d91ea92bb693", "5E2CA393CF4466489F2FAFAF77FCD3F2", "Ropeok@123"));
+            okexApiList.add(new OkexApiUser("055f287c-f318-49f4-9cc2-9cef5d8ed274", "2D49E9D239C7FFB58B0549EA0CC9C0D5", "Ropeok@123"));
 //            okexApiList.add(new OkexApiUser("2", "2", "2"));
 //            gridService.processForUser();
             for (OkexApiUser user : okexApiList) {
