@@ -151,7 +151,7 @@ public class GridService {
                     .filter(position -> !"0".equals(position.getPos())).filter(position-> "short".equals(position.getPosSide()))
                     .collect(Collectors.toList());
 
-            if (handleLong(longPositions, postions, currentPrice)) return false;
+//            if (handleLong(longPositions, postions, currentPrice)) return false;
 
 
             if (shortPositions.size() > 0) {
@@ -235,13 +235,13 @@ public class GridService {
                     List<List<String>> ca = candlesticksResponse.getData();
                     List<Double> prices = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(4))).collect(Collectors.toList());
                     List<Double> pricesHingh = ca.stream().map(candlestick -> Double.parseDouble(candlestick.get(2))).collect(Collectors.toList());
-                    //求pricesLow的最低 价格
+
                     double maxPriceLow = pricesHingh.stream().max(Double::compare).orElse(0.0);
-                    log.info("最近100跟k线最低价格：{} 回调：{}", maxPriceLow, currentPrice - maxPriceLow);
+                    log.info("最近100跟k线最高价格：{} 回调：{}", maxPriceLow, maxPriceLow-currentPrice );
                     IndicatorTool indicatorTool = new IndicatorTool();
                     double[] pricesArray = prices.stream().mapToDouble(Double::doubleValue).toArray();
-                    boolean macdGoldenCross = indicatorTool.isMACDGoldenCross(pricesArray);
-                    log.info("当前带单 orderMaxPrice :{}   MACD金叉：{}", orderMaxPrice, macdGoldenCross);
+                    boolean macdGoldenCross = indicatorTool.isMACDDeathCross(pricesArray);
+                    log.info("当前带单 orderMaxPrice :{}   MACD死叉：{}", orderMaxPrice, macdGoldenCross);
                     //获取当前价格低于订单价格 50补仓
                     if (currentPrice > orderMaxPrice) {
                         log.info("监测是否加仓中。。。。。预计补仓价格：{} 最小价格跟当前价格相差：{}", orderMaxPrice + 50, currentPrice-orderMaxPrice);
@@ -295,20 +295,20 @@ public class GridService {
                             String subPosId = dataDTO.getSubPosId();
                             String openAvgPx = dataDTO.getOpenAvgPx();
                             String openTime = dataDTO.getOpenTime();
-                            log.info("当前价格高于订单价格 :{}", currentPrice - Double.parseDouble(openAvgPx));
+                            log.info("当前价格低于订单价格 :{}",Double.parseDouble(openAvgPx)- currentPrice  );
                             //List<List<String>> ca 取最高价格 并且时间大于openTime
                             List<Double> pricesFilter = ca.stream()
                                     .filter(candlestick -> Long.parseLong(candlestick.get(0)) > Long.parseLong(openTime))
                                     .map(candlestick -> Double.parseDouble(candlestick.get(4)))
                                     .collect(Collectors.toList());
                             if (!pricesFilter.isEmpty()) {
-                                double maxPrice = prices.stream().max(Double::compareTo).get();
-                                log.info("当前最高价格 :{}", maxPrice);
+                                double minPrice = prices.stream().min(Double::compareTo).get();
+                                log.info("当前最高价格 :{}", minPrice);
                                 //获取当前价格高于订单价格 50平仓
-                                if (currentPrice - Double.parseDouble(openAvgPx) >= 40) {
-                                    log.info("追踪止盈中。。。。当前回测：{}", maxPrice - currentPrice);
+                                if (Double.parseDouble(openAvgPx)-currentPrice   >= 40) {
+                                    log.info("追踪止盈中。。。。当前回测：{}", currentPrice-minPrice  );
                                     //当最高价格回测10 则平仓
-                                    if (maxPrice - currentPrice >= 10) {
+                                    if ( currentPrice-minPrice >= 10) {
                                         CloseSubposition closeSubposition = new CloseSubposition();
                                         closeSubposition.setSubPosId(subPosId);
                                         closeSubposition.setTag("");

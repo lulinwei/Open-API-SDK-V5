@@ -163,26 +163,26 @@ public class IndicatorTool {
 //
 //
 //
-//    public boolean isMACDDeathCross(double[] closePrices) {
-//        Core talib = new Core();
-//        int lookback = talib.macdLookback(12, 26, 9);
-////        if (closePriceIndex < lookback) return false;
-//
-//        double[] outMACD = new double[closePrices.length-lookback];
-//        double[] outSignal = new double[closePrices.length-lookback];
-//        double[] outHist = new double[closePrices.length-lookback];
-//        MInteger begin = new MInteger();
-//        MInteger length = new MInteger();
-//
-//        talib.macd(0, closePrices.length - 1, closePrices, 12, 26, 9, begin, length, outMACD, outSignal, outHist);
-//
-////        int macdEnd = begin.value + length.value - 1;
-//        int macdEnd = outMACD.length - 1;
-//        if (macdEnd < 1) return false;
-////        log.info("死叉 {}  {} {}  {}  ",outMACD[macdEnd - 1],outSignal[macdEnd - 1],outMACD[macdEnd],outSignal[macdEnd]);
-//
-//        return outMACD[macdEnd - 1] > outSignal[macdEnd - 1] && outMACD[macdEnd] <= outSignal[macdEnd];
-//    }
+    public boolean isMACDDeathCross(double[] closePrices) {
+        Core talib = new Core();
+        int lookback = talib.macdLookback(12, 26, 9);
+//        if (closePriceIndex < lookback) return false;
+
+        double[] outMACD = new double[closePrices.length-lookback];
+        double[] outSignal = new double[closePrices.length-lookback];
+        double[] outHist = new double[closePrices.length-lookback];
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+
+        talib.macd(0, closePrices.length - 1, closePrices, 12, 26, 9, begin, length, outMACD, outSignal, outHist);
+
+//        int macdEnd = begin.value + length.value - 1;
+        int macdEnd = outMACD.length - 1;
+        if (macdEnd < 1) return false;
+//        log.info("死叉 {}  {} {}  {}  ",outMACD[macdEnd - 1],outSignal[macdEnd - 1],outMACD[macdEnd],outSignal[macdEnd]);
+
+        return outMACD[macdEnd - 1] > outSignal[macdEnd - 1] && outMACD[macdEnd] <= outSignal[macdEnd];
+    }
 //
 //    public boolean isMACDDeathCross(List<FuturesCandlestick> futuresCandlesticks) {
 //        double[] closePrices = futuresCandlesticks.stream().mapToDouble(bar -> Double.valueOf(bar.getC())).toArray();
