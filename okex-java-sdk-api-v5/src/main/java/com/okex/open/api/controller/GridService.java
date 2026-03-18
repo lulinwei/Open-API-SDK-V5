@@ -424,7 +424,7 @@ public class GridService {
 // 添加边界检查
             int size = currentSubpositionsResponseData.size();
             log.info("带单数量：{}  持仓usdt：{}", size, notionlUsd);
-            if (notionlUsd > 1000) {
+            if (notionlUsd > 900) {
                 log.info("触发风控 带单仓位usdt大于1000，停止策略");
                 return true;
             }
